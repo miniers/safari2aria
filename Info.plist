@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Author</key>
+	<string>Miniers</string>
+	<key>Builder Version</key>
+	<string>12603.2.4</string>
+	<key>CFBundleDisplayName</key>
+	<string>safari2aria</string>
+	<key>CFBundleIdentifier</key>
+	<string>miniers.safari2aria</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>1.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+	<key>Chrome</key>
+	<dict>
+		<key>Database Quota</key>
+		<integer>10485760</integer>
+		<key>Global Page</key>
+		<string>global.html</string>
+	</dict>
+	<key>Content</key>
+	<dict>
+		<key>Scripts</key>
+		<dict>
+			<key>End</key>
+			<array>
+				<string>js/endscript.js</string>
+			</array>
+			<key>Start</key>
+			<array>
+				<string>js/toastr.js</string>
+			</array>
+		</dict>
+	</dict>
+	<key>Description</key>
+	<string>Catches downloads for aria2</string>
+	<key>DeveloperIdentifier</key>
+	<string>V34B9RF2D5</string>
+	<key>ExtensionInfoDictionaryVersion</key>
+	<string>1.0</string>
+	<key>Permissions</key>
+	<dict>
+		<key>Website Access</key>
+		<dict>
+			<key>Include Secure Pages</key>
+			<true/>
+			<key>Level</key>
+			<string>All</string>
+		</dict>
+	</dict>
+	<key>Update From Gallery</key>
+	<true/>
+	<key>Website</key>
+	<string>http://safari2aria.lk.mk/</string>
+</dict>
+</plist>

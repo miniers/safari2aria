@@ -1,0 +1,75 @@
+body {
+    background-color: #fff; /* #edeff5; */
+}
+
+#wrapper {
+    background-color: #f6f7f9;
+    border: 1px solid #cacdd9;
+    border-radius: 7px;
+    
+    width: 500px;
+    margin: 12px auto;
+    padding: 10px;
+}
+
+h1 {
+/*    font-family: sans-serif;*/
+    font-size: 1.3em;
+    margin: 0 0 1.3em 0;
+}
+
+.block {
+    border-top: 1px solid #dfe1e8;
+    padding: 1.2em 0 0 0;
+    margin: 1.2em 0 0 0;
+    min-width: 160px;
+}
+
+.topLabel {
+    font-size: 14px;
+}
+
+textarea {
+    width: 485px;
+    height: 130px;
+    resize: none;
+    border-radius: 4px;
+    padding: 4px 6px;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.msgLabel {
+    color: green;
+    padding-bottom: 10px;
+    font-size: 11px;
+    font-style: italic;
+}
+
+.button {
+/*    background-color: white;*/
+/*    color: black;*/
+/*    border: 1px solid #4CAF50;*/
+/*    border-radius: 4px;*/
+    padding: 6px 10px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 13px;
+}
+.rpc{
+    display: flex;
+
+}
+.rpc label{
+    flex: none;
+}
+#aria2rpc{
+    width: 100%;
+    flex:1;
+}
+#rpcList input{
+    flex:1;
+}
+#rpcList .name{
+    flex:none;
+}

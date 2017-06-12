@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title data-i18n="optionsTitle">safari2aria - Preferences</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <link href="css/options.css" rel="stylesheet" type="text/css">
+
+    </head>
+<body>
+    <div id="app">
+        <h1>safari2aria - 设置</h1>
+        <div class="block">
+            <div class="topLabel"><input v-model="enableTypefiles" type="checkbox">启用文件类型自动拦截</div>
+            <textarea rows="10" cols="70" style="resize:none;" v-model="filetypes" >mkv mp4 avi</textarea>
+            <div class="msgLabel">多种类型间以空格分割</div>
+        </div>
+        <div class="rpc">
+            <label >aria2rpc地址：</label>
+            <button @click="addRpc">+</button>
+        </div>
+        <div id="rpcList">
+            <div class="rpc" v-for="(rpc, index) in rpcList">
+                <input v-model="rpc.name" type="text" class="name">:
+                <input v-model="rpc.url" type="text" >
+                <button @click="delRpc(index)" v-if="rpcList.length>1" class="del">删除</button>
+            </div>
+
+        </div>
+        <button @click="save" class="button">保存</button>
+    </div>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/options.js"></script>
+</body>
+</html>
