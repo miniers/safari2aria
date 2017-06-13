@@ -20,6 +20,7 @@
         </div>
         <div id="rpcList">
             <div class="rpc" v-for="(rpc, index) in rpcList">
+                <input class="defaultRpc" type="radio" :value="index" v-model="defaultRpcIndex">
                 <input v-model="rpc.name" type="text" class="name">:
                 <input v-model="rpc.url" type="text" >
                 <button @click="delRpc(index)" v-if="rpcList.length>1" class="del">删除</button>
