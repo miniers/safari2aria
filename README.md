@@ -1,6 +1,8 @@
 # # safari2aria
 
 请搭配mac下的safari进行食用
+### v1.1.2更新内容：
+增加自动更新
 ### v1.1更新内容：
 1. 增加快捷键来切换默认rpc服务 （option+shift+[123456789]）
 2. 增加快捷键展示当前默认rpc服务（option+shift+`）
@@ -27,6 +29,8 @@
 1. 如果aria2c端没有配置ssl证书，则https网站的下载请求无法发送至aria2c
 
 该问题为safari的安全策略，暂时没有思路修复
+
+详细原因请浏览此篇博文 [https://imququ.com/post/sth-about-switch-to-https.html#toc-0-2](https://imququ.com/post/sth-about-switch-to-https.html#toc-0-2)
 
 请在 aria2c 的配置文件中添加如下配置引入证书
 ```
