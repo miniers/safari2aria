@@ -52,8 +52,11 @@ rpc-certificate=01 01 01 01 01 01 01
 ## 友情福利
 
 鉴于有些用户没有申请域名或者证书，现提供一套自用ssl证书用以搭建本地aria2c https支持
+
 域名： aria2.zc.ci
+
 解析： 127.0.0.1
+
 证书下载地址：[aria2.zc.ci.zip](https://github.com/miniers/safari2aria/files/1070942/aria2.zc.ci.zip)
 
 请参照注意事项在aria2c的配置文件中添加证书
