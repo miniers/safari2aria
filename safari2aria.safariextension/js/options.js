@@ -10,7 +10,7 @@ function restoreOptions () {
   app = new Vue({
     el: '#app',
     data: {
-      enableTypefiles:true,
+      enableTypefiles:!!config.enableTypefiles,
       defaultRpcIndex:config.defaultRpcIndex || 0,
       filetypes:config.filetypes?config.filetypes:"mp4 flv m4v asf mpeg mkv mpg divx div 3gp wmv avi mov vob ogg ogv webm flac m4a mp3 aac wma wav ape exe app pkg zip rar dmg iso 7z jpg png jpeg tiff gif bmp pdf epub pages pptx keynote rtf doc docx",
       rpcList:config.rpcList?config.rpcList:[{
