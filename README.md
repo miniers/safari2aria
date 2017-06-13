@@ -1,18 +1,18 @@
-# # safari2aria
+# safari2aria
+
+用 aria2c 来替代你的 safari 默认下载
 
 请搭配mac下的safari进行食用
-### v1.1.2更新内容：
-增加自动更新
-### v1.1更新内容：
-1. 增加快捷键来切换默认rpc服务 （option+shift+[123456789]）
-2. 增加快捷键展示当前默认rpc服务（option+shift+`）
-3. 设置界面可以设置默认rpc服务
-4. 增加快捷键临时禁制拦截 （按着cmd点击链接）
 
-### 暂时实现了一些基础功能：
-1. 自动拦截指定后缀文件的下载事件并通过aria2c来下载该文件
-2. 可配置多个aria2c地址
-3. 右键链接后可选择指定aria2c服务进行下载
+### 已有功能：
+1. 拦截指定后缀文件下载
+2. 多aria2c服务支持
+3. 右键菜单指定aria2c服务
+
+### 快捷键：
+1. 切换默认rpc服务 （option+shift+[123456789]）
+2. 展示当前默认rpc服务（option+shift+`）
+3. 临时禁用或启用拦截（按着cmd点击链接）
 
 [下载链接](https://github.com/miniers/safari2aria/releases)
 
@@ -25,8 +25,8 @@
 ![image](https://user-images.githubusercontent.com/2039910/27039821-b4518ce6-4fc1-11e7-8dc2-a9b9c1621ae0.png)
 
 
-### 已知问题：
-1. 如果aria2c端没有配置ssl证书，则https网站的下载请求无法发送至aria2c
+### 注意事项：
+如果aria2c端没有配置ssl证书，则https网站的下载请求无法发送至aria2c
 
 该问题为safari的安全策略，暂时没有思路修复
 
@@ -48,4 +48,13 @@ rpc-private-key=path/to/you/key
 rpc-secure=true
 rpc-certificate=01 01 01 01 01 01 01
 ```
+
+## 友情福利
+
+鉴于有些用户没有申请域名或者证书，现提供一套自用ssl证书用以搭建本地aria2c https支持
+域名： aria2.zc.ci
+解析： 127.0.0.1
+证书下载地址：[aria2.zc.ci.zip](https://github.com/miniers/safari2aria/files/1070942/aria2.zc.ci.zip)
+
+请参照注意事项在aria2c的配置文件中添加证书
 
