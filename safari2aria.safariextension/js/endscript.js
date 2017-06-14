@@ -1,101 +1,130 @@
+(function () {
 
-function linkForTarget (e) {
-  var result = null;
-  if ("BODY" === e.tagName) {
-    result = null
-  } else if (e.tagName === "IMG" && e.src) {
-    result = e.src
-  } else if (e.href) {
-    result = e.href
-  } else if (e.parentNode) {
-    result = linkForTarget(e.parentNode)
-  }
-  return result
-}
+  var mObserver;
+  var config;
+  var keyPressed = {};
 
-function linksFromContainer (e) {
-  var n = {};
-  if (e.href) {
-    var t = e.title || e.alt || e.innerText || e.textContent || "title";
-    n[t] = e.href
+  function linkForTarget (e) {
+    var result = null;
+    if ("BODY" === e.tagName) {
+      result = null
+    } else if (e.tagName === "IMG" && e.src) {
+      result = e.src
+    } else if (e.href) {
+      result = e.href
+    } else if (e.parentNode) {
+      result = linkForTarget(e.parentNode)
+    }
+    return result
   }
-  for (var o = e.childNodes, r = 0; r < o.length; r++) {
-    var a = this.linksFromContainer(o.item(r));
-    if (null != a)
-      for (t in a) n[t] = a[t]
-  }
-  return n
-}
 
-function selectedLinks () {
-  var e = window.getSelection();
-  if (e && e.rangeCount > 0) {
-    var n = e.getRangeAt(0);
-    if (n) {
-      var t = n.commonAncestorContainer;
-      if (t) {
-        var o = linksFromContainer(t),
-          r = e.toString(),
-          a = [];
-        for (var i in o)
-          if (-1 != r.search(i)) {
-            var s = o[i];
-            "" != s && a.push(s)
-          }
-        return a
-      }
+  function handleMessage (e) {
+    if (e.name === "changeRpc") {
+      miniToastr.success('成功切换默认下载服务至' + e.message);
+    }
+    if (e.name === "currentRpc") {
+      miniToastr.success('当前下载服务为' + e.message);
+    }
+    if (e.name === "showMassage") {
+      miniToastr[e.message.action || "success"](e.message.text);
+    }
+    if (e.name === "receiveConfig") {
+      config = e.message || {};
+      catchIframe();
     }
   }
-  return null
-}
 
-function handleMessage (e) {
-if (e.name === "changeRpc") {
-    miniToastr.success('成功切换默认下载服务至' + e.message);
+  function handleContextMenu (e) {
+    var n = [
+      linkForTarget(e.target),
+      document.location.href,
+      document.cookie
+    ];
+    safari.self.tab.setContextMenuEventUserInfo(e, n)
   }
-  if (e.name === "currentRpc") {
-    miniToastr.success('当前下载服务为' + e.message);
+
+  function catchIframe () {
+    if (mObserver) {
+      if(!config.catchIframe){
+        mObserver.disconnect();
+      }
+      return
+    }
+    if (config.catchIframe) {
+      mObserver = new MutationObserver(function (mutations) {
+        mutations.some(function (mutation) {
+          if (mutation.target.tagName === "IFRAME" && mutation.type === 'attributes' && mutation.attributeName === 'src') {
+            if (mutation.target.src.match(/^https:\/\/127\.0\.0\.1\//)) {
+              return false
+            } else {
+              safari.self.tab.dispatchMessage("downloadFromIframe", {
+                url: mutation.target.src,
+                cookie: document.cookie
+              });
+              mutation.target.src = "https://127.0.0.1/";
+            }
+            return false;
+          }
+          return false;
+        });
+      });
+      mObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['src'],
+        attributeOldValue: true,
+        characterData: false,
+        characterDataOldValue: false,
+        childList: false,
+        subtree: true
+      });
+    }
   }
-  if (e.name === "showMassage") {
-    miniToastr[e.message.action || "success"](e.message.text);
+
+  document.onkeydown = function (event) {
+    var unicode = event.charCode ? event.charCode : event.keyCode;
+    keyPressed[unicode] = true;
+    //console.log('onkeydown:',keyPressed);
+    sendKeyPressEvent()
+  };
+
+  document.onkeyup = function (event) {
+    var unicode = event.charCode ? event.charCode : event.keyCode;
+    delete keyPressed[unicode];
+    sendKeyPressEvent()
+  };
+  window.onblur = function (event) {
+    keyPressed={};
+    sendKeyPressEvent()
+  };
+
+  function sendKeyPressEvent () {
+    safari.self.tab.dispatchMessage("keyPress", {
+      keyPressed: keyPressed
+    });
+    saveCookie();
   }
-}
 
-function handleContextMenu (e) {
+  function saveCookie () {
+    safari.self.tab.dispatchMessage("setCookie", {
+      cookie: document.cookie
+    });
+  }
 
-  var n = new Array;
-  n[0] = linkForTarget(e.target);
-  n[1] = document.location.href;
-  n[2] = selectedLinks();
-  safari.self.tab.setContextMenuEventUserInfo(e, n)
-}
+  function init () {
+    miniToastr.init({
+      appendTarget: document.body,
+      timeout: 5000
+    });
+    saveCookie();
+    safari.self.tab.dispatchMessage("getConfig");
 
+    document.addEventListener("contextmenu", handleContextMenu, !1);
 
-//handle command key
-document.onkeydown = function (event) {
-  var unicode = event.charCode ? event.charCode : event.keyCode;
-  keyPressed[unicode] = true;
-  sendKeyPressEvent()
-};
+    safari.self.addEventListener("message", handleMessage, !1);
 
-document.onkeyup = function (event) {
-  var unicode = event.charCode ? event.charCode : event.keyCode;
-  keyPressed[unicode] = false;
-  sendKeyPressEvent()
-};
+    sendKeyPressEvent();
+  }
 
-function sendKeyPressEvent () {
-  safari.self.tab.dispatchMessage("keyPress", {
-    keyPressed: keyPressed
-  });
-}
+  init()
 
-var keyPressed = {};
-miniToastr.init({
-  appendTarget: document.body,
-  timeout: 5000
-});
-sendKeyPressEvent();
-document.addEventListener("contextmenu", handleContextMenu, !1);
-
-safari.self.addEventListener("message", handleMessage, !1);
+})();

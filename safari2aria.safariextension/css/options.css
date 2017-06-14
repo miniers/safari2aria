@@ -76,3 +76,9 @@ textarea {
 #rpcList .defaultRpc{
     flex: none;
 }
+.option{
+    display: flex;
+}
+input.text{
+    flex:1
+}

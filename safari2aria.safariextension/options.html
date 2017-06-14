@@ -27,6 +27,15 @@
             </div>
 
         </div>
+        <div class="option">
+            <label><input v-model="enableCookie" type="checkbox">启用cookie</label>
+        </div>
+        <div class="option">
+            <label><input v-model="catchIframe" type="checkbox">启用iframe拦截</label>
+        </div>
+        <div class="option">
+            <label>user-agent:</label><input v-model="userAgent" type="text" class="text">
+        </div>
         <button @click="save" class="button">保存</button>
     </div>
     <script type="text/javascript" src="js/vue.js"></script>
