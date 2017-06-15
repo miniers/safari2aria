@@ -11,6 +11,7 @@
 4. 支持百度云和迅雷离线导出
 5. 全局拦截模式
 
+
 ### 快捷键：
 功能 | 快捷键
 ---- | ---
@@ -21,7 +22,8 @@
 设置 |  option+shift+,
 
 ### 注意事项
-请在aria2c的配置文件中加入如下配置,用以开启百度云和迅雷离线导出时自动更改下载文件名
+1. aria2已经无需配置SSL证书了
+2. 请在aria2c的配置文件中加入如下配置,用以开启百度云和迅雷离线导出时自动更改下载文件名
 ```
 content-disposition-default-utf8=true
 ```
@@ -47,41 +49,4 @@ content-disposition-default-utf8=true
 - 点击下载，打开文件下载窗口
 - 如当前为自动拦截模式，长按**shift**并点击**普通下载**按钮即可导出下载至默认rpc服务器
 - 如当前关闭了自动拦截默认，需长按**shift+cmd**并点击**普通下载**按钮即可导出下载至默认rpc服务器
-
-
-### 注意事项：
-如果aria2c端没有配置ssl证书，则https网站的下载请求无法发送至aria2c
-
-该问题为safari的安全策略，暂时没有思路修复
-
-详细原因请浏览此篇博文 [https://imququ.com/post/sth-about-switch-to-https.html#toc-0-2](https://imququ.com/post/sth-about-switch-to-https.html#toc-0-2)
-
-请在 aria2c 的配置文件中添加如下配置引入证书
-```
-rpc-secure=true
-rpc-certificate=path/to/you/cert
-rpc-private-key=path/to/you/key
-```
-
-如果你的aria2c运行于macos下，
-
-则需要通过**钥匙串访问**程序将证书先行导入
-
-并在证书简介页面的最低部找到SHA-1 指纹，填写入aria2c的配置文件
-```
-rpc-secure=true
-rpc-certificate=01 01 01 01 01 01 01
-```
-
-## 友情福利
-
-鉴于有些用户没有申请域名或者证书，现提供一套自用ssl证书用以搭建本地aria2c https支持
-
-域名： aria2.zc.ci
-
-解析： 127.0.0.1
-
-证书下载地址：[aria2.zc.ci.zip](https://github.com/miniers/safari2aria/files/1070942/aria2.zc.ci.zip)
-
-请参照注意事项在aria2c的配置文件中添加证书
 

@@ -1,4 +1,4 @@
-(function () {
+if (window.top === window){(function () {
 
   var mObserver;
   var config;
@@ -31,6 +31,11 @@
     if (e.name === "receiveConfig") {
       config = e.message || {};
       catchIframe();
+    }
+    if(e.message && e.message.hasCb){
+      safari.self.tab.dispatchMessage([e.name,'cb'].join('_'), {
+        cookie: document.cookie
+      });
     }
   }
 
@@ -101,24 +106,19 @@
     safari.self.tab.dispatchMessage("keyPress", {
       keyPressed: keyPressed
     });
-    saveCookie();
   }
 
-  function saveCookie () {
-    safari.self.tab.dispatchMessage("setCookie", {
-      cookie: document.cookie
-    });
-  }
+
 
   function init () {
     miniToastr.init({
       appendTarget: document.body,
       timeout: 5000
     });
-    saveCookie();
     safari.self.tab.dispatchMessage("getConfig");
 
     document.addEventListener("contextmenu", handleContextMenu, !1);
+
 
     safari.self.addEventListener("message", handleMessage, !1);
 
@@ -127,4 +127,4 @@
 
   init()
 
-})();
+})()}

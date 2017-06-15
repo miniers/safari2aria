@@ -5,6 +5,44 @@ var cookie;
 var isCommandPressed, isShiftPressd, isOptionPressd;
 var fileTypes = [];
 var rpcList = [];
+var timers={};
+var messageAction = {
+  updateSafari2Aria:function (msg) {
+    localStorage.setItem("safari2aria", JSON.stringify(msg));
+    restoreOptions()
+  },
+  keyPress:function (msg) {
+    keyPressAction(msg)
+  },
+  getConfig:function () {
+    sendMsg('receiveConfig', config);
+  },
+  downloadFromIframe:function (msg,e) {
+    if(!isCommandPressed){
+      var t = [
+        rpcList[config.defaultRpcIndex],
+        msg.url,
+        e.target.url,
+        msg.cookie
+      ];
+      sendToAria2(t);
+    }
+  }
+}
+
+function delay (name, func, wait, scope) {
+  return function delayed() {
+    var context = scope || this,
+      args = Array.prototype.slice.call(arguments);
+    if(timers[name]){
+      clearTimeout(timers[name])
+    }
+    timers[name] = setTimeout(function () {
+      delete timers[name];
+      func.apply(context, args);
+    }, wait || 10);
+  };
+}
 
 var ARIA2 = (function () {
   var jsonrpc_version = '2.0';
@@ -47,7 +85,7 @@ var ARIA2 = (function () {
   return function (jsonrpc_path) {
     this.jsonrpc_path = jsonrpc_path;
     this.addUri = function (uri, options, cb) {
-      request(this.jsonrpc_path, 'aria2.addUri', [[uri,], options], cb);
+      delay(uri,request,100,this)(this.jsonrpc_path, 'aria2.addUri', [[uri], options], cb);
     };
     return this;
   }
@@ -61,14 +99,14 @@ function sendToAria2 (e) {
       "user-agent":config.userAgent
     }, function (err) {
       if (err) {
-        showToast("showMassage", {
+        sendMsg("showMassage", {
           action: 'error',
-          text: ['添加到', e[0].name, '失败'].join('')
+          text: ['添加到', e[0].name, '失败',config.enableCookie?"":'(关闭cookie)'].join('')
         });
       } else {
-        showToast("showMassage", {
+        sendMsg("showMassage", {
           action: 'success',
-          text: ['添加到', e[0].name, '成功'].join('')
+          text: ['添加到', e[0].name, '成功',config.enableCookie?"":'(关闭cookie)'].join('')
         });
       }
     });
@@ -76,7 +114,7 @@ function sendToAria2 (e) {
 }
 
 function openPreferences (e) {
-  "showOptions" === e.key && (openOptions(), optionsEvent = e)
+  "showOptions" === e.key && openOptions()
 }
 function openOptions () {
   safari.application.activeBrowserWindow.openTab().url = safari.extension.baseURI + "options.html"
@@ -93,34 +131,26 @@ function restoreOptions () {
   fileTypes = config.filetypes ? config.filetypes.split(" ") : [];
   for (var a = 0; a < fileTypes.length; a++)fileTypes[a] = fileTypes[a].toLowerCase()
   rpcList = config.rpcList;
-  safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('receiveConfig', config);
+  sendMsg('receiveConfig', config);
 }
 function messageHandler (e) {
-  if (e.name === "updateSafari2Aria") {
-    localStorage.setItem("safari2aria", JSON.stringify(e.message));
-    restoreOptions()
-  }
-  if (e.name === "keyPress") {
-    keyPressAction(e.message)
-  }
-  if (e.name === "setCookie") {
-    cookie = e.message.cookie;
-  }
-  if (e.name === "getConfig") {
-    safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('receiveConfig', config);
-  }
-  if (e.name === "downloadFromIframe" && !isCommandPressed) {
-    var t = [
-      rpcList[config.defaultRpcIndex],
-      e.message.url,
-      e.target.url,
-      e.message.cookie
-    ];
-    sendToAria2(t);
+  if(messageAction[e.name]){
+    messageAction[e.name](e.message,e);
   }
 }
-function showToast (type, msg) {
+function sendMsg (type, msg , cb) {
+  if(msg instanceof Function){
+    cb = msg;
+    msg={};
+  }
+  if(cb){
+    msg = Object.assign(msg || {},{
+      hasCb:true
+    });
+    messageAction[type+'_cb'] = cb;
+  }
   safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(type, msg);
+
 }
 function keyPressAction (keys) {
   var keyPressed = keys.keyPressed || {};
@@ -135,12 +165,12 @@ function keyPressAction (keys) {
           name: 'updateSafari2Aria',
           message: config
         });
-        showToast("changeRpc", rpcList[config.defaultRpcIndex].name);
+        sendMsg("changeRpc", rpcList[config.defaultRpcIndex].name);
         break;
       }
     }
     if (keyPressed[192]) {
-      showToast("currentRpc", rpcList[config.defaultRpcIndex].name);
+      sendMsg("currentRpc", rpcList[config.defaultRpcIndex].name);
     }
     if (keyPressed[188]) {
       openOptions();
@@ -172,13 +202,16 @@ function handleNavigation (e) {
     for (var n = 0; n < fileTypes.length; n++) {
       if (a === fileTypes[n] || isShiftPressd) {
         e.preventDefault();
-        var t = [
-          rpcList[config.defaultRpcIndex],
-          e.url,
-          e.target.url,
-          cookie
-        ];
-        sendToAria2(t);
+        sendMsg('getCookie',function (msg) {
+          var t = [
+            rpcList[config.defaultRpcIndex],
+            e.url,
+            e.target.url,
+            msg.cookie
+          ];
+          sendToAria2(t);
+        });
+
         break
       }
     }
