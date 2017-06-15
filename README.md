@@ -1,4 +1,6 @@
-# safari2aria
+# safari2aria 
+
+[点击下载](https://github.com/miniers/safari2aria/releases)
 
 用 aria2c 来替代你的 safari 默认下载
 
@@ -27,8 +29,6 @@
 ```
 content-disposition-default-utf8=true
 ```
-
-[下载链接](https://github.com/miniers/safari2aria/releases)
 
 设置：
 
