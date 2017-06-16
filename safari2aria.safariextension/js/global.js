@@ -56,7 +56,7 @@ function getConnect (rpcUrl) {
   return aria2Connects[rpcUrl]
 }
 function downladAble (url) {
-  if (url && isShiftPressd && config.enableTypefiles ? !isCommandPressed : isCommandPressed) {
+  if (url && config.enableTypefiles ? !isCommandPressed : isCommandPressed) {
     let a = url.substr(url.lastIndexOf(".") + 1);
     a = a.toLowerCase();
     for (let n = 0; n < fileTypes.length; n++) {
@@ -86,6 +86,7 @@ function initAria2 () {
     let aria = new Aria2(options);
     aria2Connects[rpc.url] = {
       aria2: aria,
+      rpc:rpc,
       push: rpc.push,
       taskLists:{
         active: {
@@ -123,10 +124,10 @@ function initPush (connect, name) {
 function initEvent (connect, rpcName) {
   let aria = connect.aria2;
   let downloadStart = function (e) {
-    if(!connect.started){
+  /*  if(!connect.started){
       toast.success(['添加到', rpcName, '成功', config.enableCookie ? "" : '(关闭cookie)'])
       connect.started=true;
-    }
+    }*/
   };
   let downloadComplete = function (e, err) {
     getTaskName(aria, e.gid).then(function (name) {
@@ -238,6 +239,10 @@ function sendToAria2 (e) {
     aria.addUri([e[1]], {
       header: header,
       "user-agent": config.userAgent
+    }).then(()=>{
+      toast.success(['成功添加至', connect.rpc.name, config.enableCookie ? "" : '(关闭cookie)'])
+    }).catch(err=>{
+      console.log(err);
     })
   }
 }
