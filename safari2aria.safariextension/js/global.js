@@ -8,6 +8,7 @@ let aria2Connects = {};
 let Aria2 = window.Aria2;
 let watchInterval;
 let watchIntervalTime = 1;
+let socketReconnectTimer;
 let messageAction = {
   updateSafari2Aria: function (msg) {
     localStorage.setItem("safari2aria", JSON.stringify(msg));
@@ -69,19 +70,20 @@ function downladAble (url) {
 function initAria2 () {
   for (let key in aria2Connects) {
     //如果开启推送则需要关闭ws连接
-    if (aria2Connects[key].aria2 && aria2Connects[key].push) {
+    let aria = aria2Connects[key].aria2;
+    if (aria && aria.socket && aria.socket.readyState === 1) {
       aria2Connects[key].aria2.close()
     }
   }
   aria2Connects = {};
   config.rpcList.forEach((rpc, index) => {
-    let optionMatch = rpc.url.match(/^(?:http|ws)(s)?(?:\:\/\/)(token\:[^@]*)?@?([^\:\/]*)\:?(\d*)(\/[^\/]*)/);
+    let optionMatch = rpc.url.match(/^(http|ws)(s)?(?:\:\/\/)(token\:[^@]*)?@?([^\:\/]*)\:?(\d*)(\/[^\/]*)/);
     let options = {
-      host: optionMatch[3],
-      port: optionMatch[4] || 6800,
-      secure: !!(optionMatch && optionMatch[1]),
-      secret: optionMatch[2] ? optionMatch[2].split(':')[1] : '',
-      path: optionMatch[5] || '/jsonrpc'
+      host: optionMatch[4],
+      port: optionMatch[5] || 6800,
+      secure: !!(optionMatch && optionMatch[2]),
+      secret: optionMatch[3] ? optionMatch[3].split(':')[1] : '',
+      path: optionMatch[6] || '/jsonrpc'
     };
     let aria = new Aria2(options);
     aria2Connects[rpc.url] = {
@@ -104,20 +106,26 @@ function initAria2 () {
       }
     };
     if (rpc.push) {
+      if(socketReconnectTimer){
+        clearTimeout(socketReconnectTimer)
+      }
       initPush(aria2Connects[rpc.url], rpc.name)
     }
   })
 }
-function initPush (connect, name) {
+function initPush (connect, name,reconnect) {
   let aria = connect.aria2;
   aria.open()
     .then(() => {
       initEvent(connect, name);
+      if(reconnect){
+        toast.success(['成功开启', name, '推送服务'])
+      }
       //initWatch();
     }).catch((err) => {
-    toast.error(['websocket连接失败，有可能aria2并没有运行,10秒后自动重连'], ['连接', name, '推送服务失败'])
-    setTimeout(() => {
-      initPush(aria, name)
+    !reconnect&&toast.error(['请确认aria2已经运行,每隔10秒后将会自动重试'], [ name, '开启推送失败']);
+    socketReconnectTimer = setTimeout(() => {
+      initPush(connect, name,true)
     }, 10000)
   })
 }
@@ -242,6 +250,7 @@ function sendToAria2 (e) {
     }).then(()=>{
       toast.success(['成功添加至', connect.rpc.name, config.enableCookie ? "" : '(关闭cookie)'])
     }).catch(err=>{
+      toast.error(['添加至', connect.rpc.name, '失败', config.enableCookie ? "" : '(关闭cookie)'])
       console.log(err);
     })
   }
