@@ -129,9 +129,6 @@
     var that = this
     var called = false
 
-    socket.onclose = function () {
-      that.onclose()
-    }
     socket.onmessage = function (event) {
       that._onmessage(JSON.parse(event.data))
     }
@@ -145,6 +142,7 @@
         that.onopen()
       }
       socket.onclose = (err)=>{
+        that.onclose();
         if(err.code == 1006){
           if (!called) {
             done(err)

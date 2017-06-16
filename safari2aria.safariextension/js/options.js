@@ -14,6 +14,8 @@ function restoreOptions () {
       userAgent:"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/603.2.4 (KHTML, like Gecko) Version/10.1.1 Safari/603.2.4",
       catchIframe:true,
       enableTypefiles:true,
+      baidupanAutoRestart:false,
+      baidupanLimitSpeed: 1000,
       defaultRpcIndex: 0,
       filetypes:"mp4 flv m4v asf mpeg mkv mpg divx div 3gp wmv avi mov vob ogg ogv webm flac m4a mp3 aac wma wav ape exe app pkg zip rar dmg iso 7z jpg png jpeg tiff gif bmp pdf epub pages pptx keynote rtf doc docx",
       rpcList:[{

@@ -4,9 +4,10 @@ let config = {
 let isCommandPressed, isShiftPressd, isOptionPressd;
 let fileTypes = [];
 let rpcList = [];
-let timers = {};
 let aria2Connects = {};
 let Aria2 = window.Aria2;
+let watchInterval;
+let watchIntervalTime = 1;
 let messageAction = {
   updateSafari2Aria: function (msg) {
     localStorage.setItem("safari2aria", JSON.stringify(msg));
@@ -19,7 +20,7 @@ let messageAction = {
     sendMsg('receiveConfig', config);
   },
   downloadFromIframe: function (msg, e) {
-    if (!isCommandPressed) {
+    if (downladAble(msg.url)) {
       let t = [
         rpcList[config.defaultRpcIndex],
         msg.url,
@@ -31,24 +32,38 @@ let messageAction = {
   }
 };
 let toast = {
-  success: (msg,title) => {
-    toast.show('success',msg,title)
+  success: (msg, title) => {
+    toast.show('success', msg, title)
   },
-  error: (msg,title) => {
-    toast.show('error',msg,title)
+  error: (msg, title) => {
+    toast.show('error', msg, title)
   },
-  show: (type, msg,title) => {
-    if(msg instanceof Array){
+  show: (type, msg, title) => {
+    if (msg instanceof Array) {
       msg = msg.join('');
     }
-    if(title instanceof Array){
+    if (title instanceof Array) {
       title = title.join('');
     }
     sendMsg("showMassage", {
       action: type || 'success',
       text: msg,
-      title:title
+      title: title
     });
+  }
+}
+function getConnect (rpcUrl) {
+  return aria2Connects[rpcUrl]
+}
+function downladAble (url) {
+  if (url && isShiftPressd && config.enableTypefiles ? !isCommandPressed : isCommandPressed) {
+    let a = url.substr(url.lastIndexOf(".") + 1);
+    a = a.toLowerCase();
+    for (let n = 0; n < fileTypes.length; n++) {
+      if (a === fileTypes[n] || isShiftPressd) {
+        return true
+      }
+    }
   }
 }
 function initAria2 () {
@@ -71,35 +86,126 @@ function initAria2 () {
     let aria = new Aria2(options);
     aria2Connects[rpc.url] = {
       aria2: aria,
-      push: rpc.push
+      push: rpc.push,
+      taskLists:{
+        active: {
+          list: [],
+          ext: {}
+        },
+        waiting: {
+          list: [],
+          ext: {}
+        },
+        stopped: {
+          list: [],
+          ext: {}
+        }
+      }
     };
     if (rpc.push) {
-      aria.open()
-        .then(() => {
-          initEvent(aria, rpc.name);
-        }).catch((err) => {
-        toast.error(['websocket连接失败，有可能aria2并没有运行'],['连接',rpc.name,'推送服务失败'])
-      })
+      initPush(aria2Connects[rpc.url], rpc.name)
     }
   })
 }
-function initEvent (aria, rpcName) {
+function initPush (connect, name) {
+  let aria = connect.aria2;
+  aria.open()
+    .then(() => {
+      initEvent(connect, name);
+      //initWatch();
+    }).catch((err) => {
+    toast.error(['websocket连接失败，有可能aria2并没有运行,10秒后自动重连'], ['连接', name, '推送服务失败'])
+    setTimeout(() => {
+      initPush(aria, name)
+    }, 10000)
+  })
+}
+function initEvent (connect, rpcName) {
+  let aria = connect.aria2;
   let downloadStart = function (e) {
-    toast.success(['添加到', rpcName, '成功', config.enableCookie ? "" : '(关闭cookie)'])
+    if(!connect.started){
+      toast.success(['添加到', rpcName, '成功', config.enableCookie ? "" : '(关闭cookie)'])
+      connect.started=true;
+    }
   };
   let downloadComplete = function (e, err) {
     getTaskName(aria, e.gid).then(function (name) {
-      toast.show(err ? 'error' : 'success',[name, '下载', err ? '失败' : '成功'])
+      toast.show(err ? 'error' : 'success', [name, '下载', err ? '失败' : '成功'])
     })
   };
   aria.onDownloadStart = downloadStart;
   aria.onDownloadComplete = downloadComplete;
   aria.onBtDownloadComplete = downloadComplete;
   aria.onDownloadError = function (e) {
-    downloadComplete(e, err)
+    downloadComplete(e, true)
   }
 }
+function initWatch () {
+  if (watchInterval) {
+    clearInterval(watchInterval)
+  }
+  watchInterval = setInterval(() => {
+    config.rpcList.forEach((rpc) => {
+      let connect = aria2Connects[rpc.url];
+      getActives(connect);
+    })
+  }, watchIntervalTime * 1000)
+}
+function getActives (connect) {
+  let aria = connect.aria2;
+  if (aria.socket && aria.socket.readyState === 1) {
+    aria.tellActive()
+      .then((tasks) => {
+        optimizeBaidupan(connect, tasks);
+        connect.taskLists.active.list = tasks;
+      })
+  }
+}
+function isBaiduPanTask (files) {
+  let uris, isBaiduPan;
+  if (files && files.length) {
+    uris = files[0].uris;
+  }
+  if (uris && uris.length) {
+    isBaiduPan = uris[0].uri.search(/baidu.*/) >= 0
+  }
+  return isBaiduPan;
+};
 
+function optimizeBaidupan (connect, tasks) {
+  let aria = connect.aria2;
+  tasks.forEach((task, index) => {
+    if (!isBaiduPanTask(task.files)) {
+      return;
+    }
+    let current, ext = connect.taskLists.active.ext;
+    for (let i = 0; i < connect.taskLists.active.list.length; i++) {
+      if (connect.taskLists.active.list[i].gid === task.gid) {
+        current = connect.taskLists.active.list[i];
+        break;
+      }
+    }
+    if (!ext.baiduCount) {
+      ext.baiduCount = {};
+    }
+    if (!ext.baiduCount[task.gid]) {
+      ext.baiduCount[task.gid] = 1
+    }
+    if (current) {
+      if (task.status === 'active' && task.completedLength - current.completedLength < watchIntervalTime * config.baidupanLimitSpeed * 1024) {
+        if (ext.baiduCount[task.gid] >= 4) {
+          ext.baiduCount[task.gid] = 1;
+          console.log('restart:',task.gid);
+          aria.pause(task.gid)
+            .then(() => {
+              aria.unpause(task.gid)
+            })
+        }
+        ext.baiduCount[task.gid]++
+      }
+    }
+  })
+}
 function getTaskName (aria, gid) {
   return aria.tellStatus(gid, ['bittorrent'])
     .then((bt) => {
@@ -122,11 +228,17 @@ function getTaskName (aria, gid) {
 function sendToAria2 (e) {
   let connect = aria2Connects[e[0].url];
   let aria = connect ? connect.aria2 : false;
+  let header = config.enableCookie ? 'Cookie: ' + e[3] : '';
+  if (config.baidupanAutoDisableCookie) {
+    if (e[2] && e[2].match(/^https\:\/\/pan\.baidu\.com\/s/)) {
+      header = '';
+    }
+  }
   if (aria && e[1]) {
-    aria.addUri([e[1], {
-      header: config.enableCookie ? 'Cookie: ' + e[3] : '',
+    aria.addUri([e[1]], {
+      header: header,
       "user-agent": config.userAgent
-    }])
+    })
   }
 }
 
@@ -214,25 +326,17 @@ function validateCommand (e) {
   }
 }
 function handleNavigation (e) {
-  if (null !== e.url && config.enableTypefiles ? !isCommandPressed : isCommandPressed) {
-    let a = e.url.substr(e.url.lastIndexOf(".") + 1);
-    a = a.toLowerCase();
-    for (let n = 0; n < fileTypes.length; n++) {
-      if (a === fileTypes[n] || isShiftPressd) {
-        e.preventDefault();
-        sendMsg('getCookie', function (msg) {
-          let t = [
-            rpcList[config.defaultRpcIndex],
-            e.url,
-            e.target.url,
-            msg.cookie
-          ];
-          sendToAria2(t);
-        });
-
-        break
-      }
-    }
+  if (downladAble(e.url)) {
+    e.preventDefault();
+    sendMsg('getCookie', function (msg) {
+      let t = [
+        rpcList[config.defaultRpcIndex],
+        e.url,
+        e.target.url,
+        msg.cookie
+      ];
+      sendToAria2(t);
+    });
   }
 }
 
