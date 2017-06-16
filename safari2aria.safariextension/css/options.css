@@ -58,27 +58,27 @@ textarea {
 }
 .rpc{
     display: flex;
-
 }
 .rpc label{
     flex: none;
+}
+.rpc div{
+    display: flex;
+    justify-content: center;
+}
+.rpc div input,.rpc div button{
+    flex:none;
+}
+.rpc div .full{
+    flex:1;
 }
 #aria2rpc{
     width: 100%;
     flex:1;
 }
-#rpcList input{
-    flex:1;
-}
-#rpcList .name{
-    flex:none;
-}
-#rpcList .defaultRpc{
-    flex: none;
-}
 .option{
     display: flex;
 }
-input.text{
-    flex:1
+.option input{
+    flex:1;
 }

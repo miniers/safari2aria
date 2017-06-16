@@ -1,25 +1,26 @@
-var config = {
+let config = {
   defaultRpcIndex: 0
 };
-var cookie;
-var isCommandPressed, isShiftPressd, isOptionPressd;
-var fileTypes = [];
-var rpcList = [];
-var timers={};
-var messageAction = {
-  updateSafari2Aria:function (msg) {
+let isCommandPressed, isShiftPressd, isOptionPressd;
+let fileTypes = [];
+let rpcList = [];
+let timers = {};
+let aria2Connects = {};
+let Aria2 = window.Aria2;
+let messageAction = {
+  updateSafari2Aria: function (msg) {
     localStorage.setItem("safari2aria", JSON.stringify(msg));
     restoreOptions()
   },
-  keyPress:function (msg) {
+  keyPress: function (msg) {
     keyPressAction(msg)
   },
-  getConfig:function () {
+  getConfig: function () {
     sendMsg('receiveConfig', config);
   },
-  downloadFromIframe:function (msg,e) {
-    if(!isCommandPressed){
-      var t = [
+  downloadFromIframe: function (msg, e) {
+    if (!isCommandPressed) {
+      let t = [
         rpcList[config.defaultRpcIndex],
         msg.url,
         e.target.url,
@@ -28,88 +29,104 @@ var messageAction = {
       sendToAria2(t);
     }
   }
-}
-
-function delay (name, func, wait, scope) {
-  return function delayed() {
-    var context = scope || this,
-      args = Array.prototype.slice.call(arguments);
-    if(timers[name]){
-      clearTimeout(timers[name])
+};
+let toast = {
+  success: (msg,title) => {
+    toast.show('success',msg,title)
+  },
+  error: (msg,title) => {
+    toast.show('error',msg,title)
+  },
+  show: (type, msg,title) => {
+    if(msg instanceof Array){
+      msg = msg.join('');
     }
-    timers[name] = setTimeout(function () {
-      delete timers[name];
-      func.apply(context, args);
-    }, wait || 10);
+    if(title instanceof Array){
+      title = title.join('');
+    }
+    sendMsg("showMassage", {
+      action: type || 'success',
+      text: msg,
+      title:title
+    });
+  }
+}
+function initAria2 () {
+  for (let key in aria2Connects) {
+    //如果开启推送则需要关闭ws连接
+    if (aria2Connects[key].aria2 && aria2Connects[key].push) {
+      aria2Connects[key].aria2.close()
+    }
+  }
+  aria2Connects = {};
+  config.rpcList.forEach((rpc, index) => {
+    let optionMatch = rpc.url.match(/^(?:http|ws)(s)?(?:\:\/\/)(token\:[^@]*)?@?([^\:\/]*)\:?(\d*)(\/[^\/]*)/);
+    let options = {
+      host: optionMatch[3],
+      port: optionMatch[4] || 6800,
+      secure: !!(optionMatch && optionMatch[1]),
+      secret: optionMatch[2] ? optionMatch[2].split(':')[1] : '',
+      path: optionMatch[5] || '/jsonrpc'
+    };
+    let aria = new Aria2(options);
+    aria2Connects[rpc.url] = {
+      aria2: aria,
+      push: rpc.push
+    };
+    if (rpc.push) {
+      aria.open()
+        .then(() => {
+          initEvent(aria, rpc.name);
+        }).catch((err) => {
+        toast.error(['websocket连接失败，有可能aria2并没有运行'],['连接',rpc.name,'推送服务失败'])
+      })
+    }
+  })
+}
+function initEvent (aria, rpcName) {
+  let downloadStart = function (e) {
+    toast.success(['添加到', rpcName, '成功', config.enableCookie ? "" : '(关闭cookie)'])
   };
+  let downloadComplete = function (e, err) {
+    getTaskName(aria, e.gid).then(function (name) {
+      toast.show(err ? 'error' : 'success',[name, '下载', err ? '失败' : '成功'])
+    })
+  };
+  aria.onDownloadStart = downloadStart;
+  aria.onDownloadComplete = downloadComplete;
+  aria.onBtDownloadComplete = downloadComplete;
+  aria.onDownloadError = function (e) {
+    downloadComplete(e, err)
+  }
 }
 
-var ARIA2 = (function () {
-  var jsonrpc_version = '2.0';
-
-  function get_auth (url) {
-    return url.match(/^(?:(?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(?:\/\/)?(?:([^:@]*(?::[^:@]*)?)?@)?/)[1];
-  }
-
-  function request (jsonrpc_path, method, params, cb) {
-    var xhr = new XMLHttpRequest();
-    var auth = get_auth(jsonrpc_path);
-    jsonrpc_path = jsonrpc_path.replace(/^((?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(\/\/)?(?:(?:[^:@]*(?::[^:@]*)?)?@)?(.*)/, '$1$2$3'); // auth string not allowed in url for firefox
-
-    var request_obj = {
-      jsonrpc: jsonrpc_version,
-      method: method,
-      id: (new Date()).getTime().toString(),
-    };
-    if (params) request_obj['params'] = params;
-    if (auth && auth.indexOf('token:') == 0) params.unshift(auth);
-
-    xhr.open("POST", jsonrpc_path + "?tm=" + (new Date()).getTime().toString(), true);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-    if (auth && auth.indexOf('token:') != 0) {
-      xhr.setRequestHeader("Authorization", "Basic " + btoa(auth));
-    }
-    xhr.send(JSON.stringify(request_obj));
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-          cb && cb()
-        } else {
-          console.log('failed');
-          cb & cb("err");
-        }
-      }
-    }
-  }
-
-  return function (jsonrpc_path) {
-    this.jsonrpc_path = jsonrpc_path;
-    this.addUri = function (uri, options, cb) {
-      delay(uri,request,100,this)(this.jsonrpc_path, 'aria2.addUri', [[uri], options], cb);
-    };
-    return this;
-  }
-})();
+function getTaskName (aria, gid) {
+  return aria.tellStatus(gid, ['bittorrent'])
+    .then((bt) => {
+      return aria.getFiles(gid)
+        .then((files) => {
+          return {
+            files,
+            bt
+          }
+        });
+    }).then((datas) => {
+      let path = datas.files[0].path;
+      let name = path.split('/').pop();
+      return datas.bt && datas.bt.info ? bt['bittorrent']['info']['name'] : name
+    }).catch(err => {
+      toast.error(['获取任务信息失败'])
+    })
+}
 
 function sendToAria2 (e) {
-  var aria = ARIA2(e[0].url);
-  if (e[1]) {
-    aria.addUri(e[1], {
-      header: config.enableCookie?'Cookie: ' + e[3]:'',
-      "user-agent":config.userAgent
-    }, function (err) {
-      if (err) {
-        sendMsg("showMassage", {
-          action: 'error',
-          text: ['添加到', e[0].name, '失败',config.enableCookie?"":'(关闭cookie)'].join('')
-        });
-      } else {
-        sendMsg("showMassage", {
-          action: 'success',
-          text: ['添加到', e[0].name, '成功',config.enableCookie?"":'(关闭cookie)'].join('')
-        });
-      }
-    });
+  let connect = aria2Connects[e[0].url];
+  let aria = connect ? connect.aria2 : false;
+  if (aria && e[1]) {
+    aria.addUri([e[1], {
+      header: config.enableCookie ? 'Cookie: ' + e[3] : '',
+      "user-agent": config.userAgent
+    }])
   }
 }
 
@@ -129,36 +146,37 @@ function restoreOptions () {
     };
   }
   fileTypes = config.filetypes ? config.filetypes.split(" ") : [];
-  for (var a = 0; a < fileTypes.length; a++)fileTypes[a] = fileTypes[a].toLowerCase()
+  for (let a = 0; a < fileTypes.length; a++)fileTypes[a] = fileTypes[a].toLowerCase()
   rpcList = config.rpcList;
   sendMsg('receiveConfig', config);
+  initAria2()
 }
 function messageHandler (e) {
-  if(messageAction[e.name]){
-    messageAction[e.name](e.message,e);
+  if (messageAction[e.name]) {
+    messageAction[e.name](e.message, e);
   }
 }
-function sendMsg (type, msg , cb) {
-  if(msg instanceof Function){
+function sendMsg (type, msg, cb) {
+  if (msg instanceof Function) {
     cb = msg;
-    msg={};
+    msg = {};
   }
-  if(cb){
-    msg = Object.assign(msg || {},{
-      hasCb:true
+  if (cb) {
+    msg = Object.assign(msg || {}, {
+      hasCb: true
     });
-    messageAction[type+'_cb'] = cb;
+    messageAction[type + '_cb'] = cb;
   }
   safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(type, msg);
 
 }
 function keyPressAction (keys) {
-  var keyPressed = keys.keyPressed || {};
+  let keyPressed = keys.keyPressed || {};
   isCommandPressed = keyPressed[91];
   isShiftPressd = keyPressed[16];
   isOptionPressd = keyPressed[18];
   if (isShiftPressd && isOptionPressd) {
-    for (var i = 49; i <= 57 && i - 49 < rpcList.length; i++) {
+    for (let i = 49; i <= 57 && i - 49 < rpcList.length; i++) {
       if (keyPressed[i]) {
         config.defaultRpcIndex = i - 49;
         messageHandler({
@@ -179,31 +197,31 @@ function keyPressAction (keys) {
 
 }
 function handleCommand (e) {
-  if(e.command === "showOptions"){
+  if (e.command === "showOptions") {
     openOptions();
-  }else{
-    var index = e.command.split('.')[1];
-    var rpc = index && rpcList[index] ? rpcList[index] : rpcList[0];
-    var n = [rpc].concat(e.userInfo);
+  } else {
+    let index = e.command.split('.')[1];
+    let rpc = index && rpcList[index] ? rpcList[index] : rpcList[0];
+    let n = [rpc].concat(e.userInfo);
     sendToAria2(n)
   }
 }
 function validateCommand (e) {
-  var match = e.command && e.command.match(/^DownloadWithAria2/);
+  let match = e.command && e.command.match(/^DownloadWithAria2/);
   if (match && match.length >= 0) {
-    var a = e.userInfo;
+    let a = e.userInfo;
     (a && a.length && a[0]) || (e.target.disabled = !0)
   }
 }
 function handleNavigation (e) {
   if (null !== e.url && config.enableTypefiles ? !isCommandPressed : isCommandPressed) {
-    var a = e.url.substr(e.url.lastIndexOf(".") + 1);
+    let a = e.url.substr(e.url.lastIndexOf(".") + 1);
     a = a.toLowerCase();
-    for (var n = 0; n < fileTypes.length; n++) {
+    for (let n = 0; n < fileTypes.length; n++) {
       if (a === fileTypes[n] || isShiftPressd) {
         e.preventDefault();
-        sendMsg('getCookie',function (msg) {
-          var t = [
+        sendMsg('getCookie', function (msg) {
+          let t = [
             rpcList[config.defaultRpcIndex],
             e.url,
             e.target.url,

@@ -26,7 +26,7 @@ if (window.top === window){(function () {
       miniToastr.success('当前下载服务为' + e.message);
     }
     if (e.name === "showMassage") {
-      miniToastr[e.message.action || "success"](e.message.text);
+      miniToastr[e.message.action || "success"](e.message.text,e.message.title);
     }
     if (e.name === "receiveConfig") {
       config = e.message || {};

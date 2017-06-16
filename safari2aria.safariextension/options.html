@@ -19,11 +19,29 @@
             <button @click="addRpc">+</button>
         </div>
         <div id="rpcList">
+            <div class="rpc">
+                <div style="width:40px;">默认</div>
+                <div style="width:40px;">推送</div>
+                <div style="flex:1;">名称</div>
+                <div style="flex:4;">地址</div>
+                <div style="width:50px;">操作</div>
+            </div>
             <div class="rpc" v-for="(rpc, index) in rpcList">
-                <input class="defaultRpc" type="radio" :value="index" v-model="defaultRpcIndex">
-                <input v-model="rpc.name" type="text" class="name">:
-                <input v-model="rpc.url" type="text" >
-                <button @click="delRpc(index)" v-if="rpcList.length>1" class="del">删除</button>
+                <div style="width: 40px">
+                    <input type="radio" :value="index" v-model="defaultRpcIndex">
+                </div>
+                <div style="width:40px;">
+                    <input type="checkbox" v-model="rpc.push">
+                </div>
+                <div style="flex:1;">
+                    <input v-model="rpc.name" type="text" class="full">:
+                </div>
+                <div style="flex:4;">
+                    <input v-model="rpc.url" type="text" class="full" >
+                </div>
+                <div style="width:50px;">
+                    <button @click="delRpc(index)" v-if="rpcList.length>1" class="del">删除</button>
+                </div>
             </div>
 
         </div>
