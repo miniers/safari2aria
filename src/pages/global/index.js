@@ -1,3 +1,5 @@
+import {Aria2} from './aria2'
+import _ from 'lodash'
 let config = {
   defaultRpcIndex: 0
 };
@@ -5,7 +7,6 @@ let isCommandPressed, isShiftPressd, isOptionPressd;
 let fileTypes = [];
 let rpcList = [];
 let aria2Connects = {};
-let Aria2 = window.Aria2;
 let watchInterval;
 let watchIntervalTime = 1;
 let socketReconnectTimer;
@@ -53,6 +54,29 @@ let toast = {
     });
   }
 }
+window.s2a={
+  aria2Connects,
+  config,
+  changeServer(url){
+    let serverIndex;
+    _.forEach(rpcList,(rpc,index)=>{
+      if(rpc.url === url){
+        serverIndex = index;
+      }
+    });
+    config.defaultRpcIndex = serverIndex;
+    messageHandler({
+      name: 'updateSafari2Aria',
+      message: config
+    });
+    sendMsg("changeRpc", rpcList[config.defaultRpcIndex].name);
+  },
+  openOptions,
+  getConfig(){
+    window.s2a.aria2Connects = aria2Connects;
+    window.s2a.config = config;
+  }
+}
 function getConnect (rpcUrl) {
   return aria2Connects[rpcUrl]
 }
@@ -76,7 +100,9 @@ function initAria2 () {
     }
   }
   aria2Connects = {};
-  config.rpcList.forEach((rpc, index) => {
+  window.s2a.aria2Connects = aria2Connects
+  window.s2a.config = config;
+  config.rpcList.forEach(function(rpc, index) {
     let optionMatch = rpc.url.match(/^(http|ws)(s)?(?:\:\/\/)(token\:[^@]*)?@?([^\:\/]*)\:?(\d*)(\/[^\/]*)/);
     let options = {
       host: optionMatch[4],
@@ -89,21 +115,7 @@ function initAria2 () {
     aria2Connects[rpc.url] = {
       aria2: aria,
       rpc:rpc,
-      push: rpc.push,
-      taskLists:{
-        active: {
-          list: [],
-          ext: {}
-        },
-        waiting: {
-          list: [],
-          ext: {}
-        },
-        stopped: {
-          list: [],
-          ext: {}
-        }
-      }
+      push: rpc.push
     };
     if (rpc.push) {
       if(socketReconnectTimer){
@@ -132,10 +144,10 @@ function initPush (connect, name,reconnect) {
 function initEvent (connect, rpcName) {
   let aria = connect.aria2;
   let downloadStart = function (e) {
-  /*  if(!connect.started){
-      toast.success(['添加到', rpcName, '成功', config.enableCookie ? "" : '(关闭cookie)'])
-      connect.started=true;
-    }*/
+    /*  if(!connect.started){
+     toast.success(['添加到', rpcName, '成功', config.enableCookie ? "" : '(关闭cookie)'])
+     connect.started=true;
+     }*/
   };
   let downloadComplete = function (e, err) {
     getTaskName(aria, e.gid).then(function (name) {
@@ -246,6 +258,8 @@ function sendToAria2 (e) {
   if (aria && e[1]) {
     aria.addUri([e[1]], {
       header: header,
+      timeout:10,
+      'content-disposition-default-utf8':true,
       "user-agent": config.userAgent
     }).then(()=>{
       toast.success(['成功添加至', connect.rpc.name, config.enableCookie ? "" : '(关闭cookie)'])
@@ -275,7 +289,10 @@ function restoreOptions () {
   for (let a = 0; a < fileTypes.length; a++)fileTypes[a] = fileTypes[a].toLowerCase()
   rpcList = config.rpcList;
   sendMsg('receiveConfig', config);
-  initAria2()
+  initAria2();
+  if(_.get(safari,'extension.popovers[0].contentWindow.tlwin.refreshServerList')){
+    safari.extension.popovers[0].contentWindow.tlwin.refreshServerList();
+  }
 }
 function messageHandler (e) {
   if (messageAction[e.name]) {

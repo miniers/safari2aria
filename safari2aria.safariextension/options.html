@@ -1,66 +1,12 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <title data-i18n="optionsTitle">safari2aria - Preferences</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <link href="css/options.css" rel="stylesheet" type="text/css">
-
-    </head>
-<body>
-    <div id="app">
-        <h1>safari2aria - 设置</h1>
-        <div class="block">
-            <div class="topLabel"><input v-model="enableTypefiles" type="checkbox">启用文件类型自动拦截</div>
-            <textarea rows="10" cols="70" style="resize:none;" v-model="filetypes" >mkv mp4 avi</textarea>
-            <div class="msgLabel">多种类型间以空格分割</div>
-        </div>
-        <div class="rpc">
-            <label >aria2rpc地址：</label>
-            <button @click="addRpc">+</button>
-        </div>
-        <div id="rpcList">
-            <div class="rpc">
-                <div style="width:40px;">默认</div>
-                <div style="width:40px;">推送</div>
-                <div style="flex:1;">名称</div>
-                <div style="flex:4;">地址</div>
-                <div style="width:50px;">操作</div>
-            </div>
-            <div class="rpc" v-for="(rpc, index) in rpcList">
-                <div style="width: 40px">
-                    <input type="radio" :value="index" v-model="defaultRpcIndex">
-                </div>
-                <div style="width:40px;">
-                    <input type="checkbox" v-model="rpc.push">
-                </div>
-                <div style="flex:1;">
-                    <input v-model="rpc.name" type="text" class="full">:
-                </div>
-                <div style="flex:4;">
-                    <input v-model="rpc.url" type="text" class="full" >
-                </div>
-                <div style="width:50px;">
-                    <button @click="delRpc(index)" v-if="rpcList.length>1" class="del">删除</button>
-                </div>
-            </div>
-
-        </div>
-        <div class="option">
-            <label><input v-model="enableCookie" type="checkbox">启用cookie</label>
-        </div>
-        <div class="option">
-            <label><input v-model="catchIframe" type="checkbox">启用iframe拦截</label>
-        </div>
-        <div class="option">
-            <label>user-agent:</label><input v-model="userAgent" type="text" class="text">
-        </div>
-        <!--<div class="option">
-            <label><input v-model="baidupanAutoRestart" type="checkbox">百度网盘加速辅助 -</label>
-            <label> 最低限速:</label><input v-model="baidupanLimitSpeed" type="number" class="text">KB/s
-        </div>-->
-        <button @click="save" class="button">保存</button>
-    </div>
-    <script type="text/javascript" src="js/vue.js"></script>
-    <script type="text/javascript" src="js/options.js"></script>
-</body>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>safari2aria</title>
+  <link href="static/css/options.6c27138dcd05fd025ae97e95384df3b1.css" rel="stylesheet"></head>
+  <body>
+    <div id="app-box"></div>
+    <!-- built files will be auto injected -->
+  <script type="text/javascript" src="static/js/manifest.js"></script><script type="text/javascript" src="static/js/vendor.48f962ed222e6e9444b5.js"></script><script type="text/javascript" src="static/js/options.576f289ab1f061754dec.js"></script></body>
 </html>

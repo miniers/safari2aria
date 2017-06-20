@@ -13,22 +13,33 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.5</string>
+	<string>2.0</string>
 	<key>CFBundleVersion</key>
-	<string>1.5</string>
+	<string>2.0</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
 		<integer>10485760</integer>
 		<key>Global Page</key>
 		<string>global.html</string>
+		<key>Popovers</key>
+		<array>
+			<dict>
+				<key>Filename</key>
+				<string>popover.html</string>
+				<key>Height</key>
+				<integer>500</integer>
+				<key>Identifier</key>
+				<string>taskList</string>
+				<key>Width</key>
+				<integer>400</integer>
+			</dict>
+		</array>
 		<key>Toolbar Items</key>
 		<array>
 			<dict>
-				<key>Command</key>
-				<string>showOptions</string>
 				<key>Identifier</key>
-				<string>showOptions</string>
+				<string>showTaskList</string>
 				<key>Image</key>
 				<string>button.png</string>
 				<key>Include By Default</key>
@@ -36,7 +47,7 @@
 				<key>Label</key>
 				<string>safari2aria</string>
 				<key>Popover</key>
-				<string>options</string>
+				<string>taskList</string>
 				<key>Tool Tip</key>
 				<string>打开设置窗口</string>
 			</dict>
@@ -48,11 +59,11 @@
 		<dict>
 			<key>End</key>
 			<array>
-				<string>js/endscript.js</string>
+				<string>static/js/endscript.js</string>
 			</array>
 			<key>Start</key>
 			<array>
-				<string>js/toastr.js</string>
+				<string>static/js/manifest.js</string>
 			</array>
 		</dict>
 	</dict>
@@ -75,7 +86,7 @@
 	<key>Update From Gallery</key>
 	<true/>
 	<key>Update Manifest URL</key>
-	<string>https://miniers.github.io/safari2aria/update.plist?t=1.5</string>
+	<string>https://miniers.github.io/safari2aria/update.plist?t=2.0</string>
 	<key>Website</key>
 	<string>https://github.com/miniers/safari2aria</string>
 </dict>
