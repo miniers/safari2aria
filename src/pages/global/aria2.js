@@ -1,21 +1,10 @@
-;(function (global) {
+import pg from 'polygoat'
+(function (global) {
   'use strict'
-
-  var WebSocket
-  var fetch
-  var pg
 
   var isNode = typeof module !== 'undefined' && module.exports
 
-  if (isNode) {
-    WebSocket = require('ws')
-    fetch = require('node-fetch')
-    pg = require('polygoat')
-  } else {
-    WebSocket = global.WebSocket
-    fetch = global.fetch
-    pg = global.polygoat
-  }
+
 
   var Aria2 = function (opts) {
     this.callbacks = Object.create(null)
@@ -74,11 +63,23 @@
       'json-rpc': '2.0',
       'id': this.lastId++
     }
-
     var params = this.secret ? ['token:' + this.secret] : []
     if (Array.isArray(parameters)) {
-      params = params.concat(parameters)
+      if (method === 'system.multicall') {
+        if (Array.isArray(parameters[0])) {
+          parameters[0].forEach(function (call) {
+            if(!call.params){
+              call.params=[];
+            }
+            call.params = params.concat(call.params)
+          })
+        }
+        params = parameters;
+      } else {
+        params = params.concat(parameters)
+      }
     }
+
 
     if (params.length > 0) m.params = params
 

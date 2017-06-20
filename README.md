@@ -13,6 +13,8 @@
 4. 支持百度云和迅雷离线导出
 5. 全局拦截模式
 6. 可配置下载成功后是否推送通知提醒
+7. **下载队列列表**
+8. **下载状态控制：开始、暂停、删除**
 
 
 ### 快捷键：
@@ -29,11 +31,17 @@
 2. 请在aria2c的配置文件中加入如下配置,用以开启百度云和迅雷离线导出时自动更改下载文件名
 ```
 content-disposition-default-utf8=true
+
 ```
+下载列表：
+
+![下载列表](https://user-images.githubusercontent.com/2039910/27314971-8d8f2a3a-55a9-11e7-90ad-a5751d30f38a.png)
+
 
 设置：
 
-![image](https://user-images.githubusercontent.com/2039910/27144514-c743a31c-5164-11e7-9f23-4f2a9dcae223.png)
+![设置](https://user-images.githubusercontent.com/2039910/27315026-cf1e34fa-55a9-11e7-9f55-b6d394bba431.png)
+
 
 下载：
 

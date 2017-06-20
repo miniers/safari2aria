@@ -1,3 +1,4 @@
+import toastr from 'mini-toastr'
 if (window.top === window){(function () {
 
   var mObserver;
@@ -20,13 +21,13 @@ if (window.top === window){(function () {
 
   function handleMessage (e) {
     if (e.name === "changeRpc") {
-      miniToastr.success('成功切换默认下载服务至' + e.message);
+      toastr.success('成功切换默认下载服务至' + e.message);
     }
     if (e.name === "currentRpc") {
-      miniToastr.success('当前下载服务为' + e.message);
+      toastr.success('当前下载服务为' + e.message);
     }
     if (e.name === "showMassage") {
-      miniToastr[e.message.action || "success"](e.message.text,e.message.title);
+      toastr[e.message.action || "success"](e.message.text,e.message.title);
     }
     if (e.name === "receiveConfig") {
       config = e.message || {};
@@ -111,7 +112,7 @@ if (window.top === window){(function () {
 
 
   function init () {
-    miniToastr.init({
+    toastr.init({
       appendTarget: document.body,
       timeout: 5000
     });
