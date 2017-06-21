@@ -1517,6 +1517,12 @@ ecc-jsbn@~0.1.1:
   dependencies:
     jsbn "~0.1.0"
 
+echarts@^3.6.0:
+  version "3.6.2"
+  resolved "http://registry.npm.taobao.org/echarts/download/echarts-3.6.2.tgz#862954c8b5810bff87a48b0de0416ed8c4bb1c36"
+  dependencies:
+    zrender "^3.5.2"
+
 editorconfig@^0.13.2:
   version "0.13.2"
   resolved "http://registry.npm.taobao.org/editorconfig/download/editorconfig-0.13.2.tgz#8e57926d9ee69ab6cb999f027c2171467acceb35"
@@ -4082,6 +4088,13 @@ vm-browserify@0.0.4:
   dependencies:
     indexof "0.0.1"
 
+vue-echarts@^2.4.0:
+  version "2.4.0"
+  resolved "http://registry.npm.taobao.org/vue-echarts/download/vue-echarts-2.4.0.tgz#28654069ea4cf9ac7426ab0f5f723c77b8cd5f36"
+  dependencies:
+    echarts "^3.6.0"
+    lodash.debounce "^4.0.8"
+
 vue-hot-reload-api@^2.0.11:
   version "2.1.0"
   resolved "http://registry.npm.taobao.org/vue-hot-reload-api/download/vue-hot-reload-api-2.1.0.tgz#9ca58a6e0df9078554ce1708688b6578754d86de"
@@ -4400,3 +4413,7 @@ yargs@~3.10.0:
     cliui "^2.1.0"
     decamelize "^1.0.0"
     window-size "0.1.0"
+
+zrender@^3.5.2:
+  version "3.5.2"
+  resolved "http://registry.npm.taobao.org/zrender/download/zrender-3.5.2.tgz#e770cbe978b5f4981c1b93d9b84147a3474f21d2"

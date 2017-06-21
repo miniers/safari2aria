@@ -1,11 +1,12 @@
 /**
  * Created by liukai on 2017/6/19.
  */
+import _ from 'lodash'
 export function getEntryFileName (listEntry) {
   let name = ''
   if (listEntry.bittorrent) name = listEntry.bittorrent.info.name
   else name = listEntry.files[0].path.replace(/^.*[\\\/]/, '')
-  if (!name) name = listEntry.files[0].uris[0].uri
+  if (!name) name = _.get(listEntry,'files[0].uris[0].uri')
   return name || '...'
 }
 export function bytesToSize (bytes, keepDigits) {
@@ -16,7 +17,7 @@ export function bytesToSize (bytes, keepDigits) {
   if (i === 0) return bytes + ' ' + sizes[i]
   var k = [1, 1, 10, 100, 100][i]
   if (Number.isInteger(keepDigits)) k = Math.pow(10, keepDigits)
-  return `${Math.floor(bytes * 100 / Math.pow(1024, i) * k) / (100 * k)} ${sizes[i]}`
+  return `${Math.floor(bytes * 100 / Math.pow(1024, i) * k) / (100 * k)}${sizes[i]}`
 }
 export function duration (value, format) {
   var DURATION_FORMATS_SPLIT = /((?:[^ydhms']+)|(?:'(?:[^']|'')*')|(?:y+|d+|h+|m+|s+))(.*)/;
@@ -123,7 +124,7 @@ export function duration (value, format) {
 
       if (data) {
         var value = values[data.value];
-        if(!value&&!values[part] && format[i+1].match(/^\[.+\]/)){
+        if(!value&&!values[part] && format[i+1]&&format[i+1].match(/^\[.+\]/)){
           i++;
           continue;
         }
