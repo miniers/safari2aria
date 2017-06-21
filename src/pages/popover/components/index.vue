@@ -11,7 +11,7 @@
           </group>
         </div>
         <div class="rpcServer">
-          <button>{{currenServerName}}{{!globalStat?'(未连接)':''}}</button>
+          <button>{{currenServerName}}{{!globalStat ? '(未连接)' : ''}}</button>
           <i class="material-icons">{{popmenuIsShow ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}}</i>
         </div>
       </popmenu>
@@ -25,7 +25,7 @@
         </div>
       </div>
       <div class="speed" title="点击设置全局限速" @click.nativ.stop="openAria2Options()">
-        <div class="up">
+        <div class="up" v-if="getGlobalStat.uploadSpeed>0">
           <i class="material-icons">arrow_upward</i>
           {{getGlobalStat.uploadSpeedText}}
         </div>
@@ -42,14 +42,17 @@
     <x-dialog v-model="showOptions" hide-on-blur :scroll="false" class="dialog-options">
       <group>
         <x-input title="全局最大下载速度" type="number" :show-clear="false"
+                 :min="0"
                  v-model="change2GlobalOptions['max-overall-download-limit']">
-          <span slot="right">B</span>
+          <span slot="right">KB</span>
         </x-input>
         <x-input title="全局最大上传速度" type="number" :show-clear="false"
+                 :min="0"
                  v-model="change2GlobalOptions['max-overall-upload-limit']">
-          <span slot="right">B</span>
+          <span slot="right">KB</span>
         </x-input>
         <x-input title="同时任务数量" type="number" :show-clear="false"
+                 :min="1"
                  v-model="change2GlobalOptions['max-concurrent-downloads']">
           <span slot="right">个</span>
         </x-input>
@@ -67,13 +70,12 @@
   import Radio from '@/components/Radio.vue'
   import {XHeader, Group, XDialog, XInput, XTextarea, CheckIcon, Flexbox, FlexboxItem, XButton, XSwitch, Cell} from 'vux'
   import _ from 'lodash'
-  import {Aria2} from '@/pages/global/aria2'
   import Popmenu from '@/components/popmenu.vue'
   import TaskList from './taskList.vue'
   import * as util from '@/public/util'
   import {mapGetters, mapActions, mapState, mapMutations} from 'vuex'
   import debugConfig from '../config'
-  let s2a = debugConfig.getConfig()
+  let s2a = debugConfig.getConfig({not_connect:true});
   export default {
     components: {
       XHeader,
@@ -100,6 +102,7 @@
         }
       },
       keymap () {
+
         return {
           // 'esc+ctrl' is OK.
           'meta+a': (e) => {
@@ -117,6 +120,14 @@
           'alt+d': (e) => {
             e.preventDefault();
             this.removeSelectedDownloads()
+          },
+          'alt+shift+l': (e) => {
+            e.preventDefault();
+            if(safari.extension.toolbarItems[0].popover.visible){
+              safari.extension.toolbarItems[0].popover.hide();
+            }else{
+              safari.extension.toolbarItems[0].showPopover()
+            }
           },
           'space': (e) => {
             e.preventDefault();
@@ -165,7 +176,7 @@
         this.listTimer = setInterval(() => {
           if (s2a.isDebug || safari.extension.popovers[0].visible) {
             this.getTaskList({
-              loadOptions:!this.globalOption
+              loadOptions: !this.globalOption
             })
           }
         }, this.config.refreshTime ? this.config.refreshTime * 1000 : 5000)
@@ -175,7 +186,11 @@
       },
       saveAria2Options(){
         this.saveOptions({
-          options: this.change2GlobalOptions
+          options: {
+            'max-overall-download-limit':this.change2GlobalOptions['max-overall-download-limit']*1024 + '',
+            'max-overall-upload-limit':this.change2GlobalOptions['max-overall-upload-limit']*1024 + '',
+            'max-concurrent-downloads':this.change2GlobalOptions['max-concurrent-downloads'],
+          }
         }).then(() => {
           this.showOptions = false;
           this.$vux.toast.show({
@@ -185,7 +200,11 @@
       },
       openAria2Options(){
         this.showOptions = true;
-        this.change2GlobalOptions = this.globalOption;
+        this.change2GlobalOptions = {
+          'max-overall-download-limit':this.globalOption['max-overall-download-limit']/1024,
+          'max-overall-upload-limit':this.globalOption['max-overall-upload-limit']/1024,
+          'max-concurrent-downloads':this.globalOption['max-concurrent-downloads'],
+        };
       },
       popmenuHide(){
         this.popmenuIsShow = false;
@@ -262,7 +281,8 @@
 
     }
   }
-  .empty{
+
+  .empty {
     text-align: center;
   }
 

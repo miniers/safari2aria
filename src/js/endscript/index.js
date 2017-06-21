@@ -110,7 +110,6 @@ if (window.top === window){(function () {
   }
 
 
-
   function init () {
     toastr.init({
       appendTarget: document.body,
@@ -122,7 +121,6 @@ if (window.top === window){(function () {
 
 
     safari.self.addEventListener("message", handleMessage, !1);
-
     sendKeyPressEvent();
   }
 

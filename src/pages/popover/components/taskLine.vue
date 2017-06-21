@@ -14,10 +14,10 @@
           <div v-if="download.errorMessage">{{download.errorMessage}}</div>
           <div v-if="!download.errorMessage">
             <span v-if="download.status !='active'">{{getStatus}}</span>
-            <span class="size" v-if="download.totalLength !== '0'">{{size}}</span>
+            <span class="size" v-if="download.totalLength !== '0'">{{isDownloading?completedSize+'/':''}}{{size}}</span>
             <span class="speed" v-if="isDownloading">{{downloadSpeed}}</span>
             <span class="speed upload" v-if="isUploading">{{uploadSpeed}}</span>
-            <span class="eta" v-if="isDownloading">剩余时间: {{eta}}</span>
+            <span class="eta" v-if="isDownloading">剩余: {{eta}}</span>
           </div>
         </div>
       </div>
@@ -80,6 +80,9 @@
       progress: function () {
         let progress=this.download.totalLength === '0' ? 0 : this.download.completedLength / this.download.totalLength;
         return [progress*100,'%'].join('')
+      },
+      completedSize: function () {
+        return util.bytesToSize(this.download.completedLength)
       },
       size: function () {
         return util.bytesToSize(this.download.totalLength)

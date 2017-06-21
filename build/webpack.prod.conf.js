@@ -30,12 +30,6 @@ var webpackConfig = merge(baseWebpackConfig, {
     new webpack.DefinePlugin({
       'process.env': env
     }),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      },
-      sourceMap: true
-    }),
     // extract css into its own file
     new ExtractTextPlugin({
       filename: utils.assetsPath('css/[name].[contenthash].css')
@@ -105,6 +99,17 @@ var webpackConfig = merge(baseWebpackConfig, {
   ]
 })
 
+if(!process.env.npm_config_big){
+  webpackConfig.plugins.push(
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      },
+      sourceMap: true
+    })
+  )
+}
+
 if(config.build.pages){
   config.build.pages.forEach(function (page) {
     webpackConfig.plugins.push(
@@ -126,7 +131,6 @@ if(config.build.pages){
     )
   })
 }
-
 if(config.build.js){
   config.build.js.forEach(function (js) {
     webpackConfig.plugins.push(

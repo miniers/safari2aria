@@ -18,5 +18,8 @@ new Vue({
 window.tlwin={
   refreshServerList(){
     store.commit('refreshServerList');
+  },
+  refreshTaskList(){
+    store.dispatch('getTaskList',{loadOptions:true})
   }
 }

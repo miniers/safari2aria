@@ -4,26 +4,11 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import _ from 'lodash'
-import {Aria2} from '@/pages/global/aria2'
 import * as util from '@/public/util'
 import debugConfig from '../config'
 
 Vue.use(Vuex)
 let s2a = debugConfig.getConfig() || {};
-s2a.isDebug && _.forEach(s2a.aria2Connects, (con, url) => {
-  let optionMatch = url.match(/^(http|ws)(s)?(?:\:\/\/)(token\:[^@]*)?@?([^\:\/]*)\:?(\d*)(\/[^\/]*)/);
-  let options = {
-    host: optionMatch[4],
-    port: optionMatch[5] || 6800,
-    secure: !!(optionMatch && optionMatch[2]),
-    secret: optionMatch[3] ? optionMatch[3].split(':')[1] : '',
-    path: optionMatch[6] || '/jsonrpc'
-  };
-  con.aria2 = new Aria2(options)
-  if (con.push) {
-    con.aria2.open();
-  }
-})
 
 const serverAction = {
   getServer(url){
@@ -81,8 +66,8 @@ const mutations = {
     }
   },
   refreshServerList(state){
-    s2a.getConfig();
-    s2a = debugConfig.getConfig();
+    s2a&&s2a.getConfig&&s2a.getConfig();
+    s2a = debugConfig.getConfig({options:s2a});
     state.config = s2a.config;
     state.serverList = serverAction.getServerList();
     state.currentServerUrl = Object.keys(state.serverList)[_.get(s2a,'config.defaultRpcIndex',0)];
@@ -95,7 +80,7 @@ const mutations = {
   },
   changeList(state, payload){
     state.currentServerUrl = payload.url
-    s2a.changeServer(payload.url)
+    s2a.changeServer&&s2a.changeServer(payload.url)
   },
   setSelected(state, payload){
     state.selectedGids = payload.selected;
@@ -173,6 +158,12 @@ const actions = {
       })
   },
   getTaskList({commit, state}, payload = {}){
+    if(!s2a || !s2a.getConfig){
+      s2a = debugConfig.getConfig()
+      if(!s2a.getConfig){
+        return Promise.reject('获取global变量错误')
+      }
+    }
     if (!state.currentServerUrl) {
       commit('refreshServerList')
     }
@@ -210,15 +201,26 @@ const actions = {
         commit('setGlobalStat', {
           globalStat: tasks[3][0]
         });
+        if(_.get(window.safari||{},'extension.toolbarItems')){
+          if(tasks[3][0]&&tasks[3][0].numActive){
+            safari.extension.toolbarItems[0].badge = tasks[3][0].numActive
+          }else{
+            safari.extension.toolbarItems[0].badge = 0
+          }
+        }
         if (payload.loadOptions){
           commit('setGlobalOption', {
             globalOption: tasks[4][0]
-          })
+          });
+
         }
         if (tasks[3] && tasks[3].code) {
           return Promise.reject(tasks[3])
         }
       }).catch(function (err) {
+        commit('setGlobalStat', {
+          globalStat: false
+        });
         console.log('获取列表失败', err)
       })
   },

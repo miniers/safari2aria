@@ -7,8 +7,6 @@ let isCommandPressed, isShiftPressd, isOptionPressd;
 let fileTypes = [];
 let rpcList = [];
 let aria2Connects = {};
-let watchInterval;
-let watchIntervalTime = 1;
 let socketReconnectTimer;
 let messageAction = {
   updateSafari2Aria: function (msg) {
@@ -65,21 +63,19 @@ window.s2a={
       }
     });
     config.defaultRpcIndex = serverIndex;
+    //config.hideConnectErrorToast=true;
     messageHandler({
       name: 'updateSafari2Aria',
       message: config
     });
-    sendMsg("changeRpc", rpcList[config.defaultRpcIndex].name);
+    //sendMsg("changeRpc", rpcList[config.defaultRpcIndex].name);
   },
   openOptions,
   getConfig(){
     window.s2a.aria2Connects = aria2Connects;
     window.s2a.config = config;
   }
-}
-function getConnect (rpcUrl) {
-  return aria2Connects[rpcUrl]
-}
+};
 function downladAble (url) {
   if (url && config.enableTypefiles ? !isCommandPressed : isCommandPressed) {
     let a = url.substr(url.lastIndexOf(".") + 1);
@@ -100,8 +96,6 @@ function initAria2 () {
     }
   }
   aria2Connects = {};
-  window.s2a.aria2Connects = aria2Connects
-  window.s2a.config = config;
   config.rpcList.forEach(function(rpc, index) {
     let optionMatch = rpc.url.match(/^(http|ws)(s)?(?:\:\/\/)(token\:[^@]*)?@?([^\:\/]*)\:?(\d*)(\/[^\/]*)/);
     let options = {
@@ -123,23 +117,31 @@ function initAria2 () {
       }
       initPush(aria2Connects[rpc.url], rpc.name)
     }
-  })
+  });
+  window.s2a.aria2Connects = aria2Connects
+  window.s2a.config = config;
 }
-function initPush (connect, name,reconnect) {
+function initPush (connect, name) {
   let aria = connect.aria2;
   aria.open()
     .then(() => {
       initEvent(connect, name);
-      if(reconnect){
-        toast.success(['成功开启', name, '推送服务'])
+      if(connect.reconnect){
+        delete connect.reconnect;
+        toast.success(['成功链接', name])
       }
-      //initWatch();
     }).catch((err) => {
-    !reconnect&&toast.error(['请确认aria2已经运行,每隔10秒后将会自动重试'], [ name, '开启推送失败']);
+    connect.reconnect&&toast.error(['请确认aria2已经运行,每隔10秒将会自动重试'], [ name, '链接失败']);
+    connect.reconnect=true;
     socketReconnectTimer = setTimeout(() => {
-      initPush(connect, name,true)
+      initPush(connect, name)
     }, 10000)
   })
+}
+function refreshToolbarItem () {
+  if(_.get(safari,'extension.popovers[0].contentWindow.tlwin.refreshTaskList')){
+    safari.extension.popovers[0].contentWindow.tlwin.refreshTaskList();
+  }
 }
 function initEvent (connect, rpcName) {
   let aria = connect.aria2;
@@ -148,84 +150,24 @@ function initEvent (connect, rpcName) {
      toast.success(['添加到', rpcName, '成功', config.enableCookie ? "" : '(关闭cookie)'])
      connect.started=true;
      }*/
+    refreshToolbarItem()
+  }; let downloadStop = function (e) {
+    refreshToolbarItem()
   };
   let downloadComplete = function (e, err) {
+    refreshToolbarItem()
     getTaskName(aria, e.gid).then(function (name) {
       toast.show(err ? 'error' : 'success', [name, '下载', err ? '失败' : '成功'])
     })
   };
   aria.onDownloadStart = downloadStart;
+  aria.onDownloadPause = downloadStop;
+  aria.onDownloadStop = downloadStop;
   aria.onDownloadComplete = downloadComplete;
   aria.onBtDownloadComplete = downloadComplete;
   aria.onDownloadError = function (e) {
     downloadComplete(e, true)
   }
-}
-function initWatch () {
-  if (watchInterval) {
-    clearInterval(watchInterval)
-  }
-  watchInterval = setInterval(() => {
-    config.rpcList.forEach((rpc) => {
-      let connect = aria2Connects[rpc.url];
-      getActives(connect);
-    })
-  }, watchIntervalTime * 1000)
-}
-function getActives (connect) {
-  let aria = connect.aria2;
-  if (aria.socket && aria.socket.readyState === 1) {
-    aria.tellActive()
-      .then((tasks) => {
-        optimizeBaidupan(connect, tasks);
-        connect.taskLists.active.list = tasks;
-      })
-  }
-}
-function isBaiduPanTask (files) {
-  let uris, isBaiduPan;
-  if (files && files.length) {
-    uris = files[0].uris;
-  }
-  if (uris && uris.length) {
-    isBaiduPan = uris[0].uri.search(/baidu.*/) >= 0
-  }
-  return isBaiduPan;
-};
-
-function optimizeBaidupan (connect, tasks) {
-  let aria = connect.aria2;
-  tasks.forEach((task, index) => {
-    if (!isBaiduPanTask(task.files)) {
-      return;
-    }
-    let current, ext = connect.taskLists.active.ext;
-    for (let i = 0; i < connect.taskLists.active.list.length; i++) {
-      if (connect.taskLists.active.list[i].gid === task.gid) {
-        current = connect.taskLists.active.list[i];
-        break;
-      }
-    }
-    if (!ext.baiduCount) {
-      ext.baiduCount = {};
-    }
-    if (!ext.baiduCount[task.gid]) {
-      ext.baiduCount[task.gid] = 1
-    }
-    if (current) {
-      if (task.status === 'active' && task.completedLength - current.completedLength < watchIntervalTime * config.baidupanLimitSpeed * 1024) {
-        if (ext.baiduCount[task.gid] >= 4) {
-          ext.baiduCount[task.gid] = 1;
-          console.log('restart:',task.gid);
-          aria.pause(task.gid)
-            .then(() => {
-              aria.unpause(task.gid)
-            })
-        }
-        ext.baiduCount[task.gid]++
-      }
-    }
-  })
 }
 function getTaskName (aria, gid) {
   return aria.tellStatus(gid, ['bittorrent'])
@@ -250,11 +192,6 @@ function sendToAria2 (e) {
   let connect = aria2Connects[e[0].url];
   let aria = connect ? connect.aria2 : false;
   let header = config.enableCookie ? 'Cookie: ' + e[3] : '';
-  if (config.baidupanAutoDisableCookie) {
-    if (e[2] && e[2].match(/^https\:\/\/pan\.baidu\.com\/s/)) {
-      header = '';
-    }
-  }
   if (aria && e[1]) {
     aria.addUri([e[1]], {
       header: header,
@@ -310,8 +247,10 @@ function sendMsg (type, msg, cb) {
     });
     messageAction[type + '_cb'] = cb;
   }
-  safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(type, msg);
+  if(window.safari && safari.application.activeBrowserWindow.activeTab.page){
+    safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(type, msg);
 
+  }
 }
 function keyPressAction (keys) {
   let keyPressed = keys.keyPressed || {};
@@ -335,6 +274,9 @@ function keyPressAction (keys) {
     }
     if (keyPressed[188]) {
       openOptions();
+    }
+    if (keyPressed[76] && safari && safari.extension) {
+      safari.extension.toolbarItems[0].showPopover()
     }
   }
 

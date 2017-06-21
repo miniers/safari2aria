@@ -6,7 +6,8 @@
   "private": true,
   "scripts": {
     "dev": "node build/dev-server.js",
-    "build": "node build/build.js"
+    "build": "node build/build.js",
+    "build_big": "npm run build --big"
   },
   "dependencies": {
     "fastclick": "^1.0.6",
