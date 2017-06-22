@@ -1,7 +1,7 @@
 <template>
   <div class="pop_wrapper" v-hotkey="keymap">
     <x-header class="pop_header" :left-options="{showBack: false}" :right-options="{showMore:true}"
-              @on-click-more="openOptions">
+              @on-click-more="openOptionsPanel">
       <popmenu ref="popmenu" placement="bottom" @on-show="popmenuShow" @on-hide="popmenuHide">
         <div slot="content" class="selectRpcServer">
           <group>
@@ -75,7 +75,6 @@
   import * as util from '@/public/util'
   import {mapGetters, mapActions, mapState, mapMutations} from 'vuex'
   import debugConfig from '../config'
-  let s2a = debugConfig.getConfig({not_connect:true});
   export default {
     components: {
       XHeader,
@@ -136,6 +135,7 @@
         }
       },
       ...mapGetters([
+        'isDebug',
         'taskLists',
         'selectedTasks',
         'getAllTaskGid',
@@ -174,15 +174,12 @@
         }
         this.getTaskList();
         this.listTimer = setInterval(() => {
-          if (s2a.isDebug || safari.extension.popovers[0].visible) {
+          if (this.isDebug || safari.extension.popovers[0].visible) {
             this.getTaskList({
               loadOptions: !this.globalOption
             })
           }
         }, this.config.refreshTime ? this.config.refreshTime * 1000 : 5000)
-      },
-      openOptions(){
-        s2a.openOptions();
       },
       saveAria2Options(){
         this.saveOptions({
@@ -229,6 +226,7 @@
         'pauseSelectedDownloads',
         'removeSelectedDownloads',
         'toggleSelectedStatus',
+        'openOptionsPanel',
         'saveOptions',
         'getTaskList' // 映射 this.getTaskList() 为 this.$store.dispatch('getTaskList')
       ]),

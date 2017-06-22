@@ -50,7 +50,7 @@
       <x-textarea title="user-agent" :show-clear="false" v-model="userAgent"></x-textarea>
     </group>
     <group>
-      <x-input title="列表刷新间隔" type="number" :show-clear="false" v-model="refreshTime">
+      <x-input title="列表刷新间隔" class="right_input" type="number" :show-clear="false" v-model="refreshTime">
         <span slot="right">秒</span>
       </x-input>
       <x-switch title="启用文件分块图表" v-model="enableChart"></x-switch>
@@ -128,6 +128,14 @@
   .cell{
     padding:0 15px;
 
+  }
+  .right_input{
+    .weui-cell__primary{
+      padding-right: 5px;
+    }
+    input{
+      text-align: right;
+    }
   }
   .rpcList{
     .header{

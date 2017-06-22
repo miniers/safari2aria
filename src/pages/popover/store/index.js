@@ -8,22 +8,38 @@ import * as util from '@/public/util'
 import debugConfig from '../config'
 
 Vue.use(Vuex)
-let s2a = debugConfig.getConfig() || {};
+let s2a;
 
 const serverAction = {
+  get_s2a(...args){
+    if(!s2a || !s2a.getConfig){
+      s2a = debugConfig.getConfig(args)
+      if(!s2a.getConfig){
+        return false
+      }
+    }
+    return s2a
+  },
   getServer(url){
-    return s2a.aria2Connects[url];
+    if(!serverAction.get_s2a()){
+      return false
+    }
+    let {aria2Connects={}} = s2a.getConfig();
+    return aria2Connects[url];
   },
   getServerList(){
-    let list = {};
-    _.forEach(s2a.aria2Connects, function (server, url) {
+    if(!serverAction.get_s2a()){
+      return ''
+    }
+    let list = {},{aria2Connects={}} = s2a.getConfig();
+    _.forEach(aria2Connects, function (server, url) {
       list[url] = server.rpc;
     });
     return list;
   },
   sendCall(url, ...args){
-    if (url) {
-      let server = serverAction.getServer(url);
+    let server;
+    if (url && (server = serverAction.getServer(url))&&server.aria2) {
       return server.aria2.send(...args)
     } else {
       return Promise.reject();
@@ -66,11 +82,12 @@ const mutations = {
     }
   },
   refreshServerList(state){
-    s2a&&s2a.getConfig&&s2a.getConfig();
-    s2a = debugConfig.getConfig({options:s2a});
-    state.config = s2a.config;
-    state.serverList = serverAction.getServerList();
-    state.currentServerUrl = Object.keys(state.serverList)[_.get(s2a,'config.defaultRpcIndex',0)];
+    if(serverAction.get_s2a({options:s2a})){
+      let {config={}}=s2a.getConfig();
+      state.config = config;
+      state.serverList = serverAction.getServerList();
+      state.currentServerUrl = Object.keys(state.serverList)[_.get(config,'defaultRpcIndex',0)];
+    }
   },
   setGlobalStat(state, payload){
     state.globalStat = payload.globalStat
@@ -90,6 +107,12 @@ const mutations = {
 // actions are functions that causes side effects and can involve
 // asynchronous operations.
 const actions = {
+  openOptionsPanel(){
+    if(!serverAction.get_s2a()){
+      return false
+    }
+    s2a.openOptions();
+  },
   toggleSelectedStatus({dispatch, state, getters, commit}, payload = {}){
     let selected = _.get(payload, 'gids', state.selectedGids);
     let selectedTasks = getters.taskLists.filter(download => ~selected.indexOf(download.gid));
@@ -158,11 +181,8 @@ const actions = {
       })
   },
   getTaskList({commit, state}, payload = {}){
-    if(!s2a || !s2a.getConfig){
-      s2a = debugConfig.getConfig()
-      if(!s2a.getConfig){
-        return Promise.reject('获取global变量错误')
-      }
+    if(!serverAction.get_s2a()){
+      return Promise.reject('获取global变量错误')
     }
     if (!state.currentServerUrl) {
       commit('refreshServerList')
@@ -229,6 +249,12 @@ const actions = {
 
 // getters are functions
 const getters = {
+  isDebug(state){
+    if(!serverAction.get_s2a()){
+      return false
+    }
+    return s2a.isDebug
+  },
   serverList: state => {
     return state.serverList;
   },

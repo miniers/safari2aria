@@ -7,19 +7,26 @@ let isCommandPressed, isShiftPressd, isOptionPressd;
 let fileTypes = [];
 let rpcList = [];
 let aria2Connects = {};
+//socket重连定时器
 let socketReconnectTimer;
+//消息处理函数
 let messageAction = {
+  //配置变更后保存并重启服务
   updateSafari2Aria: function (msg) {
     localStorage.setItem("safari2aria", JSON.stringify(msg));
     restoreOptions()
   },
+  //快捷键
   keyPress: function (msg) {
     keyPressAction(msg)
   },
+  //配置更新后推送至页面脚本（主要用于开关iframe拦截）
   getConfig: function () {
-    sendMsg('receiveConfig', config);
+    sendMsg('sendToEndScript', config);
   },
+  //下载iframe拦截到的url
   downloadFromIframe: function (msg, e) {
+    //判断是否需要下载
     if (downladAble(msg.url)) {
       let t = [
         rpcList[config.defaultRpcIndex],
@@ -31,6 +38,7 @@ let messageAction = {
     }
   }
 };
+//页面提醒
 let toast = {
   success: (msg, title) => {
     toast.show('success', msg, title)
@@ -52,9 +60,9 @@ let toast = {
     });
   }
 }
+//和列表页的胡同变量
 window.s2a={
-  aria2Connects,
-  config,
+  //切换默认服务（列表页切换后同步用）
   changeServer(url){
     let serverIndex;
     _.forEach(rpcList,(rpc,index)=>{
@@ -70,24 +78,73 @@ window.s2a={
     });
     //sendMsg("changeRpc", rpcList[config.defaultRpcIndex].name);
   },
+  //打开配置面板
   openOptions,
+  //重新获取配置
   getConfig(){
-    window.s2a.aria2Connects = aria2Connects;
-    window.s2a.config = config;
+    return {
+      config,
+      aria2Connects
+    }
   }
 };
+
+//判断是否需要下载
 function downladAble (url) {
+  //通过cmd来切换自动拦截状态
   if (url && config.enableTypefiles ? !isCommandPressed : isCommandPressed) {
+    if(url.match(/magnet:[^\\"]+/)){
+      return true
+    }
     let a = url.substr(url.lastIndexOf(".") + 1);
     a = a.toLowerCase();
+    //判断url中文件后缀是否在配置内
     for (let n = 0; n < fileTypes.length; n++) {
+      //如果按着shift则会强行拦截下载
       if (a === fileTypes[n] || isShiftPressd) {
         return true
       }
     }
   }
 }
+
+//初始化aria2服务
 function initAria2 () {
+
+  let newConnect={}
+  //从配置中处理服务器地址
+  config.rpcList.forEach(function(rpc, index) {
+    let optionMatch = rpc.url.match(/^(http|ws)(s)?(?:\:\/\/)(token\:[^@]*)?@?([^\:\/]*)\:?(\d*)(\/[^\/]*)/);
+    let options = {
+      host: optionMatch[4],//主机地址
+      port: optionMatch[5] || 6800,//rpc端口
+      secure: !!(optionMatch && optionMatch[2]),//是否ssl
+      secret: optionMatch[3] ? optionMatch[3].split(':')[1] : '',//token
+      path: optionMatch[6] || '/jsonrpc'//rpc路径
+    };
+    if(aria2Connects[rpc.url]){
+      newConnect[rpc.url] = aria2Connects[rpc.url];
+      delete aria2Connects[rpc.url];
+    }else{
+      let aria = new Aria2(options);
+      newConnect[rpc.url] = {
+        aria2: aria,
+        rpc:rpc,
+        push: rpc.push//是否用websocket连接
+      };
+    }
+
+/*
+    //清除旧的定时器
+    if(socketReconnectTimer){
+      clearTimeout(socketReconnectTimer)
+    }*/
+    //如果开启推送，则开启websocket连接
+    if (rpc.push) {
+      initPush(newConnect[rpc.url], rpc.name)
+    }
+  });
+  //关闭已有旧连接
   for (let key in aria2Connects) {
     //如果开启推送则需要关闭ws连接
     let aria = aria2Connects[key].aria2;
@@ -95,50 +152,47 @@ function initAria2 () {
       aria2Connects[key].aria2.close()
     }
   }
-  aria2Connects = {};
-  config.rpcList.forEach(function(rpc, index) {
-    let optionMatch = rpc.url.match(/^(http|ws)(s)?(?:\:\/\/)(token\:[^@]*)?@?([^\:\/]*)\:?(\d*)(\/[^\/]*)/);
-    let options = {
-      host: optionMatch[4],
-      port: optionMatch[5] || 6800,
-      secure: !!(optionMatch && optionMatch[2]),
-      secret: optionMatch[3] ? optionMatch[3].split(':')[1] : '',
-      path: optionMatch[6] || '/jsonrpc'
-    };
-    let aria = new Aria2(options);
-    aria2Connects[rpc.url] = {
-      aria2: aria,
-      rpc:rpc,
-      push: rpc.push
-    };
-    if (rpc.push) {
-      if(socketReconnectTimer){
-        clearTimeout(socketReconnectTimer)
-      }
-      initPush(aria2Connects[rpc.url], rpc.name)
-    }
-  });
-  window.s2a.aria2Connects = aria2Connects
-  window.s2a.config = config;
+  aria2Connects = newConnect;
 }
+//初始化推送服务
 function initPush (connect, name) {
   let aria = connect.aria2;
-  aria.open()
-    .then(() => {
-      initEvent(connect, name);
-      if(connect.reconnect){
-        delete connect.reconnect;
-        toast.success(['成功链接', name])
+  if(connect.aria2&&connect.aria2.socket&&aria.socket.readyState === 1){
+      return true
+  }else{
+    aria.open()
+      .then(() => {
+        //初始化推送接受事件
+        initEvent(connect, name);
+        //如果当前为重连，则弹出连接成功提示
+        if(connect.reconnect){
+          delete connect.reconnect;
+          toast.success(['成功链接', name])
+        }
+      }).catch((err) => {
+      //只在第一次未连接成功时提示用户
+      if(_.get(safari,'application.activeBrowserWindow.activeTab.url')){
+        !connect.reconnect&&toast.error(['请确认aria2已经运行,每隔10秒将会自动重试'], [ name, '连接失败']);
+        connect.reconnect=true;
       }
-    }).catch((err) => {
-    connect.reconnect&&toast.error(['请确认aria2已经运行,每隔10秒将会自动重试'], [ name, '链接失败']);
-    connect.reconnect=true;
-    socketReconnectTimer = setTimeout(() => {
-      initPush(connect, name)
-    }, 10000)
-  })
+      //开启定时器定时重连
+      socketReconnectTimer = socketReconnectTimer || setInterval(() => {
+        let count=0;
+        _.forEach(aria2Connects,(conn)=>{
+          count+=initPush(conn)?0:1;
+        });
+        if(!count){
+          clearInterval(socketReconnectTimer);
+        }
+      }, 10000)
+    });
+    return false
+  }
+
 }
+//拉取最新任务状态并刷新扩展按钮小红点
 function refreshToolbarItem () {
+  //判断是否在
   if(_.get(safari,'extension.popovers[0].contentWindow.tlwin.refreshTaskList')){
     safari.extension.popovers[0].contentWindow.tlwin.refreshTaskList();
   }
@@ -169,6 +223,7 @@ function initEvent (connect, rpcName) {
     downloadComplete(e, true)
   }
 }
+//获取任务名称
 function getTaskName (aria, gid) {
   return aria.tellStatus(gid, ['bittorrent'])
     .then((bt) => {
@@ -187,7 +242,7 @@ function getTaskName (aria, gid) {
       toast.error(['获取任务信息失败'])
     })
 }
-
+//发送任务至aria2
 function sendToAria2 (e) {
   let connect = aria2Connects[e[0].url];
   let aria = connect ? connect.aria2 : false;
@@ -204,15 +259,20 @@ function sendToAria2 (e) {
       toast.error(['添加至', connect.rpc.name, '失败', config.enableCookie ? "" : '(关闭cookie)'])
       console.log(err);
     })
+  }else{
+    toast.error(['添加任务失败：没有url或者没有连接aria2'])
+
   }
 }
-
+//打开设置面板
 function openPreferences (e) {
   "showOptions" === e.key && openOptions()
 }
+//打开设置面板
 function openOptions () {
   safari.application.activeBrowserWindow.openTab().url = safari.extension.baseURI + "options.html"
 }
+//还原配置
 function restoreOptions () {
   config = localStorage.getItem("safari2aria");
   try {
@@ -225,22 +285,20 @@ function restoreOptions () {
   fileTypes = config.filetypes ? config.filetypes.split(" ") : [];
   for (let a = 0; a < fileTypes.length; a++)fileTypes[a] = fileTypes[a].toLowerCase()
   rpcList = config.rpcList;
-  sendMsg('receiveConfig', config);
+  //更新配置后需要同步至页面脚本
+  sendMsg('sendToEndScript', config);
   initAria2();
   if(_.get(safari,'extension.popovers[0].contentWindow.tlwin.refreshServerList')){
     safari.extension.popovers[0].contentWindow.tlwin.refreshServerList();
   }
 }
-function messageHandler (e) {
-  if (messageAction[e.name]) {
-    messageAction[e.name](e.message, e);
-  }
-}
+//向页面注入脚本发送通知消息
 function sendMsg (type, msg, cb) {
   if (msg instanceof Function) {
     cb = msg;
     msg = {};
   }
+  //如果有回调自动生成回调事件接受函数
   if (cb) {
     msg = Object.assign(msg || {}, {
       hasCb: true
@@ -252,12 +310,14 @@ function sendMsg (type, msg, cb) {
 
   }
 }
+//快捷键处理
 function keyPressAction (keys) {
   let keyPressed = keys.keyPressed || {};
   isCommandPressed = keyPressed[91];
   isShiftPressd = keyPressed[16];
   isOptionPressd = keyPressed[18];
   if (isShiftPressd && isOptionPressd) {
+    //alt+shift +[1-9]切换aria服务
     for (let i = 49; i <= 57 && i - 49 < rpcList.length; i++) {
       if (keyPressed[i]) {
         config.defaultRpcIndex = i - 49;
@@ -265,16 +325,20 @@ function keyPressAction (keys) {
           name: 'updateSafari2Aria',
           message: config
         });
+        //页面内toast提醒
         sendMsg("changeRpc", rpcList[config.defaultRpcIndex].name);
         break;
       }
     }
+    // ` 展示当前已连接服务器
     if (keyPressed[192]) {
       sendMsg("currentRpc", rpcList[config.defaultRpcIndex].name);
     }
+    // shift+alt+, 打开设置面板
     if (keyPressed[188]) {
       openOptions();
     }
+    // 打开下载列表浮层
     if (keyPressed[76] && safari && safari.extension) {
       safari.extension.toolbarItems[0].showPopover()
     }
@@ -298,6 +362,7 @@ function validateCommand (e) {
     (a && a.length && a[0]) || (e.target.disabled = !0)
   }
 }
+//拦截导航跳转事件
 function handleNavigation (e) {
   if (downladAble(e.url)) {
     e.preventDefault();
@@ -312,13 +377,19 @@ function handleNavigation (e) {
     });
   }
 }
-
+//根据配置生成右键菜单
 function handleContextMenu (event) {
   rpcList.forEach(function (rpc, index) {
     event.contextMenu.appendContextMenuItem(["DownloadWithAria2", index].join("."), ['下载至', rpc.name].join(''));
   });
 }
-
+//拦截注入脚本发来的消息
+function messageHandler (e) {
+  if (messageAction[e.name]) {
+    messageAction[e.name](e.message, e);
+  }
+}
+//页面加载成功后初始化配置
 document.addEventListener("DOMContentLoaded", restoreOptions);
 safari.application.addEventListener("message", messageHandler, !1);
 safari.extension.settings.addEventListener("change", openPreferences, !1);
