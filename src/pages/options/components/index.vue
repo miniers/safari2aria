@@ -44,16 +44,20 @@
         </flexbox>
       </div>
     </group>
-    <group>
+    <group title="辅助设置">
       <x-switch title="启用cookie" v-model="enableCookie"></x-switch>
       <x-switch title="启用iframe拦截" v-model="catchIframe"></x-switch>
       <x-textarea title="user-agent" :show-clear="false" v-model="userAgent"></x-textarea>
     </group>
-    <group>
+    <group title="下载队列浮窗">
       <x-input title="列表刷新间隔" class="right_input" type="number" :show-clear="false" v-model="refreshTime">
         <span slot="right">秒</span>
       </x-input>
       <x-switch title="启用文件分块图表" v-model="enableChart"></x-switch>
+    </group>
+    <group title="右键离线下载菜单">
+      <x-switch title="迅雷离线" v-model="enableXunleiLixian"></x-switch>
+      <x-switch title="百度离线" v-model="enableBaiduLixian"></x-switch>
     </group>
     <group>
       <x-button @click.native="save(index)" >保存</x-button>
@@ -91,6 +95,8 @@
         userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/603.2.4 (KHTML, like Gecko) Version/10.1.1 Safari/603.2.4",
         catchIframe: true,
         enableTypefiles: true,
+        enableXunleiLixian: true,
+        enableBaiduLixian: true,
         enableChart: false,
         baidupanAutoRestart: false,
         baidupanLimitSpeed: 1000,

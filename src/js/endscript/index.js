@@ -1,4 +1,7 @@
 import toastr from 'mini-toastr'
+import bdlx from './baiduLixian'
+import downloadAble from '@/public/downloadAble'
+
 if (window.top === window) {
   (function () {
 
@@ -38,9 +41,17 @@ if (window.top === window) {
       if (e.name === "showMassage") {
         toastr[e.message.action || "success"](e.message.text, e.message.title);
       }
+      if (e.name === "baiduLixian") {
+        if (location.href.match(/^https?:\/\/pan\.baidu\.com/)) {
+          bdlx(e.message.url)
+        }
+      }
       if (e.name === "sendToEndScript") {
         config = e.message || {};
         catchIframe();
+        safari.self.tab.dispatchMessage("documentReady", {
+          cookie: document.cookie
+        });
       }
       if (e.message && e.message.hasCb) {
         safari.self.tab.dispatchMessage([e.name, 'cb'].join('_'), {
@@ -68,7 +79,7 @@ if (window.top === window) {
       if (config.catchIframe) {
         mObserver = new MutationObserver(function (mutations) {
           mutations.some(function (mutation) {
-            if (mutation.target.tagName === "IFRAME" && mutation.type === 'attributes' && mutation.attributeName === 'src') {
+            if (mutation.target.tagName === "IFRAME" && mutation.type === 'attributes' && mutation.attributeName === 'src' && downloadAble(mutation.target.src,config,keyPressed)) {
               if (mutation.target.src.match(/^https:\/\/127\.0\.0\.1\//)) {
                 return false
               } else {
@@ -113,8 +124,11 @@ if (window.top === window) {
     };
 
     function sendKeyPressEvent () {
+      keyPressed.isCommandPressed=!!keyPressed[91];
+      keyPressed.isShiftPressd=!!keyPressed[16];
+      keyPressed.isOptionPressd=!!keyPressed[18];
       safari.self.tab.dispatchMessage("keyPress", {
-        keyPressed: keyPressed
+        keyPressed
       });
     }
 
@@ -127,7 +141,6 @@ if (window.top === window) {
       safari.self.tab.dispatchMessage("getConfig");
 
       document.addEventListener("contextmenu", handleContextMenu, !1);
-
 
       safari.self.addEventListener("message", handleMessage, !1);
       sendKeyPressEvent();

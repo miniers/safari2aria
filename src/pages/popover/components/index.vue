@@ -161,6 +161,10 @@
     },
     created(){
       this.init();
+      window.safari&&safari.application.addEventListener("popover", ()=>{
+        //console.log("popover open");
+        this.init();
+      }, true);
     },
     watch: {
       'config.refreshTime': function (value) {
@@ -175,9 +179,13 @@
         this.getTaskList();
         this.listTimer = setInterval(() => {
           if (this.isDebug || safari.extension.popovers[0].visible) {
+            //console.log('getTaskList');
             this.getTaskList({
               loadOptions: !this.globalOption
             })
+          }else{
+            //console.log('stop getTaskList');
+            clearInterval(this.listTimer)
           }
         }, this.config.refreshTime ? this.config.refreshTime * 1000 : 5000)
       },

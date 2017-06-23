@@ -1,12 +1,14 @@
 import {Aria2} from './aria2'
+import downloadAble from '@/public/downloadAble'
 import _ from 'lodash'
 let config = {
   defaultRpcIndex: 0
 };
-let isCommandPressed, isShiftPressd, isOptionPressd;
+let keyPressed;
 let fileTypes = [];
 let rpcList = [];
 let aria2Connects = {};
+let endPageReadyAction={};
 //socket重连定时器
 let socketReconnectTimer;
 //消息处理函数
@@ -24,18 +26,21 @@ let messageAction = {
   getConfig: function () {
     sendMsg('sendToEndScript', config);
   },
+  //配置更新后推送至页面脚本（主要用于开关iframe拦截）
+  documentReady: function () {
+    _.forEach(endPageReadyAction,function (obj) {
+      obj.action();
+    })
+  },
   //下载iframe拦截到的url
   downloadFromIframe: function (msg, e) {
-    //判断是否需要下载
-    if (downladAble(msg.url)) {
-      let t = [
-        rpcList[config.defaultRpcIndex],
-        msg.url,
-        e.target.url,
-        msg.cookie
-      ];
-      sendToAria2(t);
-    }
+    let t = [
+      rpcList[config.defaultRpcIndex],
+      msg.url,
+      e.target.url,
+      msg.cookie
+    ];
+    sendToAria2(t);
   }
 };
 //页面提醒
@@ -89,24 +94,6 @@ window.s2a={
   }
 };
 
-//判断是否需要下载
-function downladAble (url) {
-  //通过cmd来切换自动拦截状态
-  if (url && config.enableTypefiles ? !isCommandPressed : isCommandPressed) {
-    if(url.match(/magnet:[^\\"]+/)){
-      return true
-    }
-    let a = url.substr(url.lastIndexOf(".") + 1);
-    a = a.toLowerCase();
-    //判断url中文件后缀是否在配置内
-    for (let n = 0; n < fileTypes.length; n++) {
-      //如果按着shift则会强行拦截下载
-      if (a === fileTypes[n] || isShiftPressd) {
-        return true
-      }
-    }
-  }
-}
 
 //初始化aria2服务
 function initAria2 () {
@@ -312,11 +299,8 @@ function sendMsg (type, msg, cb) {
 }
 //快捷键处理
 function keyPressAction (keys) {
-  let keyPressed = keys.keyPressed || {};
-  isCommandPressed = keyPressed[91];
-  isShiftPressd = keyPressed[16];
-  isOptionPressd = keyPressed[18];
-  if (isShiftPressd && isOptionPressd) {
+  keyPressed = keys.keyPressed || {};
+  if (keyPressed.isShiftPressd && keyPressed.isOptionPressd) {
     //alt+shift +[1-9]切换aria服务
     for (let i = 49; i <= 57 && i - 49 < rpcList.length; i++) {
       if (keyPressed[i]) {
@@ -346,17 +330,40 @@ function keyPressAction (keys) {
 
 }
 function handleCommand (e) {
-  if (e.command === "showOptions") {
-    openOptions();
-  } else {
-    let index = e.command.split('.')[1];
-    let rpc = index && rpcList[index] ? rpcList[index] : rpcList[0];
-    let n = [rpc].concat(e.userInfo);
-    sendToAria2(n)
+  let command = e.command.split('.');
+  let commandAction={
+    "showOptions":function () {
+      openOptions();
+    },
+    "DownloadWithXunleilixian":()=>{
+      safari.application.activeBrowserWindow.openTab().url = ['http://lixian.vip.xunlei.com/?furl=',e.userInfo[0]].join('')
+    },
+    "DownloadWithBaidulixian":()=>{
+      safari.application.activeBrowserWindow.openTab().url = "https://pan.baidu.com/disk/home";
+      endPageReadyAction['baiduLixian']={
+        action:function () {
+          sendMsg("baiduLixian", this.param);
+          delete endPageReadyAction['baiduLixian'];
+        },
+        param:{
+          url:e.userInfo[0]
+        }
+      }
+
+    },
+    "DownloadWithAria2":()=>{
+      let index = command[1];
+      let rpc = index && rpcList[index] ? rpcList[index] : rpcList[0];
+      let n = [rpc].concat(e.userInfo);
+      sendToAria2(n)
+    }
+  };
+  if (commandAction[command[0]]) {
+    commandAction[command[0]]()
   }
 }
 function validateCommand (e) {
-  let match = e.command && e.command.match(/^DownloadWithAria2/);
+  let match = e.command && e.command.match(/^DownloadWith/);
   if (match && match.length >= 0) {
     let a = e.userInfo;
     (a && a.length && a[0]) || (e.target.disabled = !0)
@@ -364,7 +371,7 @@ function validateCommand (e) {
 }
 //拦截导航跳转事件
 function handleNavigation (e) {
-  if (downladAble(e.url)) {
+  if (downloadAble(e.url,config,keyPressed)) {
     e.preventDefault();
     sendMsg('getCookie', function (msg) {
       let t = [
@@ -382,6 +389,12 @@ function handleContextMenu (event) {
   rpcList.forEach(function (rpc, index) {
     event.contextMenu.appendContextMenuItem(["DownloadWithAria2", index].join("."), ['下载至', rpc.name].join(''));
   });
+  if(config.enableXunleiLixian){
+    event.contextMenu.appendContextMenuItem('DownloadWithXunleilixian', ['导入至迅雷离线'].join(''));
+  }
+  if(config.enableBaiduLixian){
+    event.contextMenu.appendContextMenuItem('DownloadWithBaidulixian', ['导入至百度离线'].join(''));
+  }
 }
 //拦截注入脚本发来的消息
 function messageHandler (e) {

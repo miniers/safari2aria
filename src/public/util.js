@@ -4,8 +4,8 @@
 import _ from 'lodash'
 export function getEntryFileName (listEntry) {
   let name = ''
-  if (listEntry.bittorrent) name = listEntry.bittorrent.info.name
-  else name = listEntry.files[0].path.replace(/^.*[\\\/]/, '')
+  if (listEntry.bittorrent) name = _.get(listEntry,'bittorrent.info.name',['BT:',listEntry.infoHash].join(''))
+  else name = _.get(listEntry,'files[0].path','').replace(/^.*[\\\/]/, '')
   if (!name) name = _.get(listEntry,'files[0].uris[0].uri')
   return name || '...'
 }
