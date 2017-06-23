@@ -10,11 +10,11 @@
        <key>Developer Identifier</key>
        <string>V34B9RF2D5</string>
        <key>CFBundleVersion</key>
-       <string>2.3</string>
+       <string>2.3.1</string>
        <key>CFBundleShortVersionString</key>
-       <string>2.1</string>
+       <string>2.3.1</string>
        <key>URL</key>
-       <string>https://github.com/miniers/safari2aria/releases/download/v2.3/safari2aria.safariextz</string>
+       <string>https://github.com/miniers/safari2aria/releases/download/v2.3.1/safari2aria.safariextz</string>
      </dict>
    </array>
 </dict>
