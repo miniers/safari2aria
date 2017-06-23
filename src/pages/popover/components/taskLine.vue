@@ -151,6 +151,9 @@
       name: function () {
         return util.getEntryFileName(this.download)
       },
+      path:function () {
+        return ['file://',this.download.dir].join('');
+      },
       progress: function () {
         let progress = this.download.totalLength === '0' ? 0 : this.download.completedLength / this.download.totalLength;
         return [parseInt(progress * 100), '%'].join('')
