@@ -20,19 +20,19 @@
                   @mouseleave="showPercent = false"
                   v-if="download.totalLength !== '0'">{{isDownloading ? completedSize + '/' : ''}}{{size}}</span>
             <span class="speed" v-if="isDownloading">{{downloadSpeed}}</span>
-            <span class="connections" title="连接数" v-if="isDownloading">{{downloadConnections}}</span>
+            <span class="connections" :title="$t('connections')" v-if="isDownloading">{{downloadConnections}}</span>
             <span class="speed upload" v-if="isUploading">{{uploadSpeed}}</span>
-            <span class="eta" v-if="isDownloading">剩余:{{eta}}</span>
+            <span class="eta" v-if="isDownloading">{{$t('eta')}}:{{eta}}</span>
           </div>
         </div>
       </div>
       <div class="right">
         <div class="action" v-show="showAction&&!showPercent">
-          <i class="material-icons" title="暂停" v-show="download.status === 'active'"
+          <i class="material-icons" :title="$t('pause')" v-show="download.status === 'active'"
              @click.stop="pauseSelectedDownloads({gids:[download.gid]})">pause_circle_outline</i>
-          <i class="material-icons" title="开始" v-show="download.status === 'paused'"
+          <i class="material-icons" :title="$t('start')" v-show="download.status === 'paused'"
              @click.stop="startSelectedDownloads({gids:[download.gid]})">play_circle_outline</i>
-          <i class="material-icons" title="删除" @click.stop="removeSelectedDownloads({gids:[download.gid]})">delete_forever</i>
+          <i class="material-icons" :title="$t('delete')" @click.stop="removeSelectedDownloads({gids:[download.gid]})">delete_forever</i>
         </div>
       </div>
 
@@ -61,6 +61,23 @@
       XSwitch,
       CellBox,
       chart: ECharts
+    },
+    i18n: {
+      messages: {
+        'zh-CN': {
+          'connections':'连接数',
+          'eta':'剩余',
+          'start':'开始',
+          'pause':'暂停',
+          'delete':'删除',
+          active: '下载中',
+          waiting: '等待中',
+          paused: '已暂停',
+          error: '错误',
+          complete: '已完成',
+          removed: '已删除',
+        }
+      }
     },
     data: function () {
       return {
@@ -138,15 +155,9 @@
 
       },
       getStatus(){
-        let status = {
-          active: '下载中',
-          waiting: '等待中',
-          paused: '已暂停',
-          error: '错误',
-          complete: '已完成',
-          removed: '已删除',
-        };
-        return status[this.download.status] || '';
+
+        debugger;
+        return this.$t(this.download.status) || '';
       },
       name: function () {
         return util.getEntryFileName(this.download)

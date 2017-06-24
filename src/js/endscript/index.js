@@ -8,7 +8,20 @@ if (window.top === window) {
     var mObserver;
     var config;
     var keyPressed = {};
-
+    let i18n={
+      'zh-CN':{
+        'Success switch the default download service to':'成功切换默认下载服务至',
+        'The current download service is':'当前下载服务为',
+     }
+    };
+    function getText (text,options={}) {
+      let lang = config.language || navigator.language;
+      if(i18n[lang]&&i18n[lang][text]){
+        return [i18n[lang][text],' '].join('');
+      }else{
+        return options.notfailback?'':[text,' '].join('')
+      }
+    }
     function selectedLinks () {
       var sel = window.getSelection().toString();
       if (sel.match(/^https?/) || sel.match(/magnet:/)) {
@@ -33,10 +46,10 @@ if (window.top === window) {
 
     function handleMessage (e) {
       if (e.name === "changeRpc") {
-        toastr.success('成功切换默认下载服务至' + e.message);
+        toastr.success(getText('Success switch the default download service to') + e.message);
       }
       if (e.name === "currentRpc") {
-        toastr.success('当前下载服务为' + e.message);
+        toastr.success(getText('The current download service is') + e.message);
       }
       if (e.name === "showMassage") {
         toastr[e.message.action || "success"](e.message.text, e.message.title);

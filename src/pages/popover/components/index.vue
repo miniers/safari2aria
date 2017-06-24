@@ -11,7 +11,7 @@
           </group>
         </div>
         <div class="rpcServer">
-          <button>{{currenServerName}}{{!globalStat ? '(未连接)' : ''}}</button>
+          <button>{{currenServerName}}{{!globalStat ? '('+$t('ununited')+')' : ''}}</button>
           <i class="material-icons">{{popmenuIsShow ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}}</i>
         </div>
       </popmenu>
@@ -27,9 +27,9 @@
           <x-button mini plain @click.native.stop="pauseSelectedDownloads()"><i class="material-icons">pause</i></x-button>
           <x-button mini plain @click.native.stop="removeSelectedDownloads()"><i class="material-icons">delete_forever</i></x-button>
         </div>
-        <x-button mini plain v-show="getStoppedTaskGid.length>0 && selectedGids.length===0" @click.native.stop="removeStoppedDownloads()">清除已停止</x-button>
+        <x-button mini plain v-show="getStoppedTaskGid.length>0 && selectedGids.length===0" @click.native.stop="removeStoppedDownloads()">{{$t('Remove stopped')}}</x-button>
       </div>
-      <div class="speed" title="点击设置全局限速" @click.nativ.stop="openAria2Options()">
+      <div class="speed" :title="$t('Click to set global speed limit')" @click.nativ.stop="openAria2Options()">
         <div class="up" v-if="getGlobalStat.uploadSpeed>0">
           <i class="material-icons">arrow_upward</i>
           {{getGlobalStat.uploadSpeedText}}
@@ -46,25 +46,25 @@
 
     <x-dialog v-model="showOptions" hide-on-blur :scroll="false" class="dialog-options">
       <group>
-        <x-input title="全局最大下载速度" type="number" :show-clear="false"
+        <x-input :title="$t('max-overall-download-limit')" type="number" :show-clear="false"
                  :min="0"
                  v-model="change2GlobalOptions['max-overall-download-limit']">
           <span slot="right">KB</span>
         </x-input>
-        <x-input title="全局最大上传速度" type="number" :show-clear="false"
+        <x-input :title="$t('max-overall-upload-limit')" type="number" :show-clear="false"
                  :min="0"
                  v-model="change2GlobalOptions['max-overall-upload-limit']">
           <span slot="right">KB</span>
         </x-input>
-        <x-input title="同时任务数量" type="number" :show-clear="false"
+        <x-input :title="$t('max-concurrent-downloads')" type="number" :show-clear="false"
                  :min="1"
                  v-model="change2GlobalOptions['max-concurrent-downloads']">
           <span slot="right">个</span>
         </x-input>
       </group>
       <group class="buttonGroup">
-        <x-button @click.native="saveAria2Options()">保存</x-button>
-        <x-button @click.native="showOptions = false">取消</x-button>
+        <x-button @click.native="saveAria2Options()">{{$t('Save')}}</x-button>
+        <x-button @click.native="showOptions = false">{{$t('Cancel')}}</x-button>
       </group>
     </x-dialog>
 
@@ -96,6 +96,20 @@
       XSwitch,
       Cell,
       Radio
+    },
+    i18n: {
+      messages: {
+        'zh-CN': {
+          'ununited':'未连接',
+          'Save':'保存',
+          'Cancel':'取消',
+          'max-concurrent-downloads':'同时任务数量',
+          'max-overall-download-limit':'全局最大下载速度',
+          'max-overall-upload-limit':'全局最大上传速度',
+          'Remove stopped':'清除已停止',
+          'Click to set global speed limit':'点击设置全局限速',
+        }
+      }
     },
     computed: {
       currenServerName(){
@@ -175,6 +189,12 @@
     watch: {
       'config.refreshTime': function (value) {
         this.init();
+      },
+      'config.language': function (val) {
+        this.$i18n.locale = val;
+        this.getTaskList({
+          loadOptions: true,
+        });
       }
     },
     methods: {

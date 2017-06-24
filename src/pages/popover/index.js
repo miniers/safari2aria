@@ -6,13 +6,19 @@ import router from './router'
 import store from './store'
 import VueHotkey from '@/public/v-hotkey'
 import  { ToastPlugin } from 'vux'
+import VueI18n from 'vue-i18n'
 
+Vue.use(VueI18n);
+let i18n = new VueI18n({
+  locale: navigator.language, // set locale
+});
 Vue.use(ToastPlugin)
 Vue.use(VueHotkey)
 
 new Vue({
   router,
   store,
+  i18n,
   render: h => h(App)
 }).$mount('#app-box');
 window.tlwin={

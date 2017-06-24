@@ -4,6 +4,23 @@ import _ from 'lodash'
 let config = {
   defaultRpcIndex: 0
 };
+let i18n={
+  'zh-CN':{
+    'Successful links to':'成功链接',
+    'Connection fail':'连接失败',
+    'Download':'下载',
+    'error':'失败',
+    'Import to thunder lixian':'导入至迅雷离线',
+    'Import to baidu lixian':'导入至百度离线',
+    'Downloaded to':'下载至',
+    'success':'成功',
+    'Successfully added to the':'成功添加至',
+    'Added to the':'添加至',
+    'failure':'失败',
+    'Failed to get task information':'获取任务信息失败',
+    'Make sure the aria2 is running, every 10 seconds will automatically retry':'请确认aria2已经运行,每隔10秒将会自动重试',
+  }
+};
 let keyPressed;
 let fileTypes = [];
 let rpcList = [];
@@ -94,7 +111,10 @@ window.s2a={
   }
 };
 
-
+function getText (text,options={}) {
+  let lang = config.language || navigator.language;
+  return _.get(i18n,[lang,text],options.notfailback?'':[text,' '].join(''))
+}
 //初始化aria2服务
 function initAria2 () {
 
@@ -154,12 +174,12 @@ function initPush (connect, name) {
         //如果当前为重连，则弹出连接成功提示
         if(connect.reconnect){
           delete connect.reconnect;
-          toast.success(['成功链接', name])
+          toast.success([getText('Successful links to'), name])
         }
       }).catch((err) => {
       //只在第一次未连接成功时提示用户
       if(_.get(safari,'application.activeBrowserWindow.activeTab.url')){
-        !connect.reconnect&&toast.error(['请确认aria2已经运行,每隔10秒将会自动重试'], [ name, '连接失败']);
+        !connect.reconnect&&toast.error([getText('Make sure the aria2 is running, every 10 seconds will automatically retry')], [ name, getText('Connection fail')]);
         connect.reconnect=true;
       }
       //开启定时器定时重连
@@ -198,7 +218,7 @@ function initEvent (connect, rpcName) {
   let downloadComplete = function (e, err) {
     refreshToolbarItem()
     getTaskName(aria, e.gid).then(function (name) {
-      toast.show(err ? 'error' : 'success', [name, '下载', err ? '失败' : '成功'])
+      toast.show(err ? 'error' : 'success', [name, getText('Download'), err ? getText('error') : getText('success')])
     })
   };
   aria.onDownloadStart = downloadStart;
@@ -226,7 +246,7 @@ function getTaskName (aria, gid) {
       let name = path.split('/').pop();
       return datas.bt && datas.bt.info ? bt['bittorrent']['info']['name'] : name
     }).catch(err => {
-      toast.error(['获取任务信息失败'])
+      toast.error([getText('Failed to get task information')])
     })
 }
 //发送任务至aria2
@@ -241,9 +261,9 @@ function sendToAria2 (e) {
       'content-disposition-default-utf8':true,
       "user-agent": config.userAgent
     }).then(()=>{
-      toast.success(['成功添加至', connect.rpc.name, config.enableCookie ? "" : '(关闭cookie)'])
+      toast.success([getText('Successfully added to the'), connect.rpc.name, config.enableCookie ? "" : '(with cookie)'])
     }).catch(err=>{
-      toast.error(['添加至', connect.rpc.name, '失败', config.enableCookie ? "" : '(关闭cookie)'])
+      toast.error([getText('Fail to Added to the'), connect.rpc.name, getText('failure',{notfailback:true}), config.enableCookie ? "" : '(without cookie)'])
       console.log(err);
     })
   }else{
@@ -387,13 +407,13 @@ function handleNavigation (e) {
 //根据配置生成右键菜单
 function handleContextMenu (event) {
   rpcList.forEach(function (rpc, index) {
-    event.contextMenu.appendContextMenuItem(["DownloadWithAria2", index].join("."), ['下载至', rpc.name].join(''));
+    event.contextMenu.appendContextMenuItem(["DownloadWithAria2", index].join("."), [getText('Downloaded to'), rpc.name].join(''));
   });
   if(config.enableXunleiLixian){
-    event.contextMenu.appendContextMenuItem('DownloadWithXunleilixian', ['导入至迅雷离线'].join(''));
+    event.contextMenu.appendContextMenuItem('DownloadWithXunleilixian', [getText('Import to thunder lixian')].join(''));
   }
   if(config.enableBaiduLixian){
-    event.contextMenu.appendContextMenuItem('DownloadWithBaidulixian', ['导入至百度离线'].join(''));
+    event.contextMenu.appendContextMenuItem('DownloadWithBaidulixian', [getText('Import to baidu lixian')].join(''));
   }
 }
 //拦截注入脚本发来的消息

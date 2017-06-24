@@ -2,6 +2,8 @@
 
 [点击下载](https://github.com/miniers/safari2aria/releases)
 
+safari extension for use aria2 to replace safari default download
+
 用 aria2c 来替代你的 safari 默认下载
 
 请搭配mac下的safari进行食用
@@ -18,6 +20,7 @@
 9. **aria2全局速度配置**
 10. 扩展按钮展示正在下载任务数量
 11. 一键导入下载链接至迅雷或百度离线
+12. English interface
 
 
 ### 全局捷键：

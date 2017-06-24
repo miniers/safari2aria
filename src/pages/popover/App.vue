@@ -12,7 +12,7 @@
 
 <style lang="less">
   @import '~vux/src/styles/reset.less';
-  @import 'font/material-icons.css';
+  @import '~@/font/material-icons.css';
 
   body {
     background-color: #fbf9fe;

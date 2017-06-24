@@ -10,7 +10,7 @@
 
       </task-line>
 
-      <cell class="empty" title="暂无下载任务" v-if="list.length<1">
+      <cell class="empty" :title="$t('No downloads')" v-if="list.length<1">
       </cell>
     </div>
   </group>
@@ -38,6 +38,13 @@
     props: {
       list: Array,
       selected: Array
+    },
+    i18n: {
+      messages: {
+        'zh-CN': {
+          'No downloads':'暂无下载任务',
+        }
+      }
     },
     computed: {
       gids: function () {

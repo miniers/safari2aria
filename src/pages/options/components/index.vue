@@ -1,30 +1,32 @@
 <template>
   <div>
-    <x-header :left-options="{showBack: false}">设置</x-header>
-    <group>
-      <x-switch title="自动拦截" v-model="enableTypefiles"></x-switch>
-      <x-textarea title="文件类型" v-show="enableTypefiles" v-model="filetypes"></x-textarea>
-      <!--<x-input title="自动拦截文件类型" v-model="filetypes"></x-input>-->
+    <x-header :left-options="{showBack: false}">{{$t('Setting')}}</x-header>
+    <group >
+      <selector :title="$t('Language')" :options="languageList" v-model="language"></selector>
     </group>
     <group>
-      <cell title="aria2服务器地址:">
-        <x-button @click.native="addRpc" mini>增加</x-button>
+      <x-switch :title="$t('Auto intercept')" v-model="enableTypefiles"></x-switch>
+      <x-textarea :title="$t('File type')" v-show="enableTypefiles" v-model="filetypes"></x-textarea>
+    </group>
+    <group>
+      <cell :title="$t('Aria2 Address')">
+        <x-button @click.native="addRpc" mini>{{$t('Add')}}</x-button>
       </cell>
       <div class="cell rpcList">
         <flexbox class="header">
           <flexbox-item :span="1/20">
-            默认
+            {{$t('Default')}}
           </flexbox-item>
           <flexbox-item :span="1/20">
-            推送
+            {{$t('Push')}}
           </flexbox-item>
           <flexbox-item :span="5/20">
-            名称
+            {{$t('Name')}}
           </flexbox-item>
           <flexbox-item>
-            地址
+            {{$t('Url')}}
           </flexbox-item>
-          <div class="action">操作</div>
+          <div class="action">{{$t('Action')}}</div>
         </flexbox>
         <flexbox v-for="(rpc,index) in rpcList" :key="index">
           <flexbox-item :span="1/20">
@@ -39,40 +41,41 @@
           <flexbox-item class="url">
             <x-input :show-clear="false" v-model="rpc.url"></x-input>
           </flexbox-item>
-          <x-button @click.native="delRpc(index)" v-if="rpcList.length>1" mini>删除</x-button>
+          <x-button @click.native="delRpc(index)" v-if="rpcList.length>1" mini>{{$t('Delete')}}</x-button>
 
         </flexbox>
       </div>
     </group>
-    <group title="辅助设置">
-      <x-switch title="启用cookie" v-model="enableCookie"></x-switch>
-      <x-switch title="启用iframe拦截" v-model="catchIframe"></x-switch>
-      <x-textarea title="user-agent" :show-clear="false" v-model="userAgent"></x-textarea>
+    <group :title="$t('Auxiliary Settings')">
+      <x-switch :title="$t('Enable cookie')" v-model="enableCookie"></x-switch>
+      <x-switch :title="$t('Catch iframe')" v-model="catchIframe"></x-switch>
+      <x-textarea title="User-agent" :show-clear="false" v-model="userAgent"></x-textarea>
     </group>
-    <group title="下载队列浮窗">
-      <x-input title="列表刷新间隔" class="right_input" type="number" :show-clear="false" v-model="refreshTime">
-        <span slot="right">秒</span>
+    <group :title="$t('Download popover')">
+      <x-input :title="$t('Refresh interval')" class="right_input" type="number" :show-clear="false" v-model="refreshTime">
+        <span slot="right">{{$t('s')}}</span>
       </x-input>
-      <x-switch title="启用文件分块图表" v-model="enableChart"></x-switch>
+      <x-switch :title="$t('Enable bitfield chart')" v-model="enableChart"></x-switch>
     </group>
-    <group title="右键离线下载菜单">
-      <x-switch title="迅雷离线" v-model="enableXunleiLixian"></x-switch>
-      <x-switch title="百度离线" v-model="enableBaiduLixian"></x-switch>
+    <group :title="$t('Offline download')">
+      <x-switch :title="$t('xunlei')" v-model="enableXunleiLixian"></x-switch>
+      <x-switch :title="$t('baidu')" v-model="enableBaiduLixian"></x-switch>
     </group>
     <group>
-      <x-button @click.native="save(index)" >保存</x-button>
+      <x-button @click.native="save(index)" >{{$t('Save')}}</x-button>
     </group>
   </div>
 </template>
 
 <script>
   import Radio from '@/components/Radio.vue'
-  import {XHeader,Group,XInput,XTextarea,CheckIcon,Flexbox,FlexboxItem, XButton, XSwitch, Cell} from 'vux'
+  import {XHeader,Selector,Group,XInput,XTextarea,CheckIcon,Flexbox,FlexboxItem, XButton, XSwitch, Cell} from 'vux'
 
   export default {
     components: {
       XHeader,
       Group,
+      Selector,
       XInput,
       XTextarea,
       CheckIcon,
@@ -83,6 +86,34 @@
       Cell,
       Radio
     },
+    i18n: { // `i18n` option
+      messages: {
+        'zh-CN': {
+          Setting:'设置',
+          'Auto intercept': '自动拦截',
+          'File type':'文件类型',
+          'Aria2 Address':'aria2服务器地址',
+          'Add':'新增',
+          'Default':'默认',
+          'Push':'推送',
+          'Name':'名称',
+          'Url':'地址',
+          'Action':'操作',
+          'Delete':'删除',
+          'Auxiliary Settings':'辅助设置',
+          'Enable cookie':'启用cookie',
+          'Catch iframe':'启用iframe拦截',
+          'Download popover':'下载队列浮窗',
+          'Refresh interval':'列表刷新间隔',
+          's':'秒',
+          'Save':'保存',
+          'xunlei':'迅雷离线',
+          'baidu':'百度离线',
+          'Offline download':'右键离线下载菜单',
+          'Enable bitfield chart':'启用文件分块图表',
+        }
+      }
+    },
     data () {
       let config = localStorage.getItem("safari2aria");
       try {
@@ -90,12 +121,20 @@
       } catch (err) {
         config = {};
       }
+      if(config.language){
+        this.$i18n.locale = config.language
+      }
       return Object.assign({
         enableCookie: true,
         userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/603.2.4 (KHTML, like Gecko) Version/10.1.1 Safari/603.2.4",
         catchIframe: true,
         enableTypefiles: true,
         enableXunleiLixian: true,
+        languageList: [
+          {key: 'en', value: 'English'},
+          {key: 'zh-CN', value: '中文'}
+        ],
+        language: navigator.language,
         enableBaiduLixian: true,
         enableChart: false,
         baidupanAutoRestart: false,
@@ -109,6 +148,11 @@
           url: 'http://127.0.0.1:6800/jsonrpc'
         }]
       }, config)
+    },
+    watch: {
+      language (val) {
+        this.$i18n.locale = val
+      }
     },
     methods: {
       addRpc: function () {
