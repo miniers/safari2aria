@@ -1,10 +1,10 @@
 /**
  * Created by liukai on 2017/6/23.
  */
-export default function downloadAble (url,config={},keypress={}) {
+export default function downloadAble (url, config = {}, keypress = {}) {
   //通过cmd来切换自动拦截状态
-  if (url && config.enableTypefiles ? !keypress.isCommandPressed : keypress.isCommandPressed) {
-    if(url.match(/magnet:[^\\"]+/)){
+  if (url && !keypress[82] && config.enableTypefiles ? !keypress.isCommandPressed : keypress.isCommandPressed) {
+    if (url.match(/magnet:[^\\"]+/)) {
       return true
     }
     let a = url.substr(url.lastIndexOf(".") + 1);

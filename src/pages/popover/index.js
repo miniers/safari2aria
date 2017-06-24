@@ -19,7 +19,7 @@ window.tlwin={
   refreshServerList(){
     store.commit('refreshServerList');
   },
-  refreshTaskList(){
-    store.dispatch('getTaskList',{loadOptions:true})
+  refreshTaskList(config={}){
+    store.dispatch('getTaskList',{loadOptions:true,all:config.all})
   }
 }

@@ -18,11 +18,16 @@
     </x-header>
     <div class="globalStatus">
       <div class="control">
+        <x-button mini plain v-show="taskLists.length>0" @click.native.stop="selecteAll()">
+          <i class="material-icons" v-show="selectedGids.length===0">done_all</i>
+          <i class="material-icons" v-show="selectedGids.length>0">cancel</i>
+        </x-button>
         <div class="inner" v-show="selectedGids.length>0">
-          <x-button mini plain @click.native.stop="startSelectedDownloads()">开始</x-button>
-          <x-button mini plain @click.native.stop="pauseSelectedDownloads()">暂停</x-button>
-          <x-button mini plain @click.native.stop="removeSelectedDownloads()">删除</x-button>
+          <x-button mini plain @click.native.stop="startSelectedDownloads()"><i class="material-icons">play_arrow</i></x-button>
+          <x-button mini plain @click.native.stop="pauseSelectedDownloads()"><i class="material-icons">pause</i></x-button>
+          <x-button mini plain @click.native.stop="removeSelectedDownloads()"><i class="material-icons">delete_forever</i></x-button>
         </div>
+        <x-button mini plain v-show="getStoppedTaskGid.length>0 && selectedGids.length===0" @click.native.stop="removeStoppedDownloads()">清除已停止</x-button>
       </div>
       <div class="speed" title="点击设置全局限速" @click.nativ.stop="openAria2Options()">
         <div class="up" v-if="getGlobalStat.uploadSpeed>0">
@@ -106,7 +111,7 @@
           // 'esc+ctrl' is OK.
           'meta+a': (e) => {
             e.preventDefault();
-            this.setSelected({selected: this.getAllTaskGid})
+            this.selecteAll()
           },
           'alt+p': (e) => {
             e.preventDefault();
@@ -139,6 +144,7 @@
         'taskLists',
         'selectedTasks',
         'getAllTaskGid',
+        'getStoppedTaskGid',
         'getGlobalStat',
       ]),
       ...mapState([
@@ -173,19 +179,23 @@
     },
     methods: {
       init () {
+        let _this = this;
         if (this.listTimer) {
           clearInterval(this.listTimer)
         }
-        this.getTaskList();
+        this.getTaskList({
+          loadOptions: true,
+        });
         this.listTimer = setInterval(() => {
-          if (this.isDebug || safari.extension.popovers[0].visible) {
+          if (_this.isDebug || safari.extension.popovers[0].visible) {
             //console.log('getTaskList');
-            this.getTaskList({
-              loadOptions: !this.globalOption
+            _this.getTaskList({
+              loadOptions: !_this.globalOption || !_this.globalOption['max-concurrent-downloads'],
+              activeList:true
             })
           }else{
             //console.log('stop getTaskList');
-            clearInterval(this.listTimer)
+            clearInterval(_this.listTimer)
           }
         }, this.config.refreshTime ? this.config.refreshTime * 1000 : 5000)
       },
@@ -222,6 +232,9 @@
         this.setCurrentServer(payload);
         this.getTaskList();
       },
+      selecteAll(){
+        this.setSelected({selected: this.selectedGids.length === this.getAllTaskGid.length?[]:this.getAllTaskGid})
+      },
       ...mapMutations([
         'refreshServerList',
         'setSelected'
@@ -233,6 +246,7 @@
         'startSelectedDownloads',
         'pauseSelectedDownloads',
         'removeSelectedDownloads',
+        'removeStoppedDownloads',
         'toggleSelectedStatus',
         'openOptionsPanel',
         'saveOptions',
@@ -299,14 +313,23 @@
     .control {
       flex: 1;
       padding: 0 10px;
+      display: flex;
+      .inner{
+        display: flex;
+      }
       .weui-btn {
-        padding: 5px 10px;
+        padding: 0 6px;
         line-height: 1;
         border: none;
         background: #54a1b4;
         color: #ffffff;
         margin-top: 0;
         margin-right: 10px;
+        margin-left:0;
+        flex:none;
+        flex: none;
+        height: 24px;
+
       }
 
     }

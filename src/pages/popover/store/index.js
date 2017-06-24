@@ -12,26 +12,26 @@ let s2a;
 
 const serverAction = {
   get_s2a(...args){
-    if(!s2a || !s2a.getConfig){
+    if (!s2a || !s2a.getConfig) {
       s2a = debugConfig.getConfig(args)
-      if(!s2a.getConfig){
+      if (!s2a.getConfig) {
         return false
       }
     }
     return s2a
   },
   getServer(url){
-    if(!serverAction.get_s2a()){
+    if (!serverAction.get_s2a()) {
       return false
     }
-    let {aria2Connects={}} = s2a.getConfig();
+    let {aria2Connects = {}} = s2a.getConfig();
     return aria2Connects[url];
   },
   getServerList(){
-    if(!serverAction.get_s2a()){
+    if (!serverAction.get_s2a()) {
       return ''
     }
-    let list = {},{aria2Connects={}} = s2a.getConfig();
+    let list = {}, {aria2Connects = {}} = s2a.getConfig();
     _.forEach(aria2Connects, function (server, url) {
       list[url] = server.rpc;
     });
@@ -39,7 +39,7 @@ const serverAction = {
   },
   sendCall(url, ...args){
     let server;
-    if (url && (server = serverAction.getServer(url))&&server.aria2) {
+    if (url && (server = serverAction.getServer(url)) && server.aria2) {
       return server.aria2.send(...args)
     } else {
       return Promise.reject();
@@ -82,11 +82,11 @@ const mutations = {
     }
   },
   refreshServerList(state){
-    if(serverAction.get_s2a({options:s2a})){
-      let {config={}}=s2a.getConfig();
+    if (serverAction.get_s2a({options: s2a})) {
+      let {config = {}} = s2a.getConfig();
       state.config = config;
       state.serverList = serverAction.getServerList();
-      state.currentServerUrl = Object.keys(state.serverList)[_.get(config,'defaultRpcIndex',0)];
+      state.currentServerUrl = Object.keys(state.serverList)[_.get(config, 'defaultRpcIndex', 0)];
     }
   },
   setGlobalStat(state, payload){
@@ -97,7 +97,7 @@ const mutations = {
   },
   changeList(state, payload){
     state.currentServerUrl = payload.url
-    s2a.changeServer&&s2a.changeServer(payload.url)
+    s2a.changeServer && s2a.changeServer(payload.url)
   },
   setSelected(state, payload){
     state.selectedGids = payload.selected;
@@ -108,7 +108,7 @@ const mutations = {
 // asynchronous operations.
 const actions = {
   openOptionsPanel(){
-    if(!serverAction.get_s2a()){
+    if (!serverAction.get_s2a()) {
       return false
     }
     s2a.openOptions();
@@ -118,12 +118,14 @@ const actions = {
     let selectedTasks = getters.taskLists.filter(download => ~selected.indexOf(download.gid));
     let taskStatus = {active: [], paused: []};
     selectedTasks.map(download => {
-      taskStatus[download.status] = taskStatus[download.status] || [];
-      taskStatus[download.status].push(download.gid)
+      let status = download.status;
+      status = status==='waiting'?'active':status;
+      taskStatus[status] = taskStatus[status] || [];
+      taskStatus[status].push(download.gid)
     });
     let status = taskStatus.active.length >= taskStatus.paused.length ? 'active' : 'paused';
     let method = taskStatus.active.length >= taskStatus.paused.length ? 'pause' : 'unpause';
-    return (taskStatus.active.length || taskStatus.paused.length) ? serverAction.mutilCall(state.currentServerUrl,
+    return (taskStatus.active.length || taskStatus.paused.length ) ? serverAction.mutilCall(state.currentServerUrl,
       taskStatus[status].map(gid => ({
         methodName: `aria2.${method}`,
         params: [gid]
@@ -139,8 +141,8 @@ const actions = {
         ...payload.options
       })
       .then(() => {
-        return dispatch('getTaskList',{
-          loadOptions:true
+        return dispatch('getTaskList', {
+          loadOptions: true
         });
       }).catch(function (err) {
         console.log(err)
@@ -170,7 +172,7 @@ const actions = {
     let selectedTasks = getters.taskLists.filter(download => ~selected.indexOf(download.gid))
     return serverAction.mutilCall(state.currentServerUrl,
       selectedTasks.map(download => ({
-        methodName: `aria2.${~['active', 'paused'].indexOf(download.status) ? 'remove' : 'removeDownloadResult'}`,
+        methodName: `aria2.${~['active', 'paused', 'waiting'].indexOf(download.status) ? 'remove' : 'removeDownloadResult'}`,
         params: [download.gid]
       })))
       .then(() => {
@@ -180,8 +182,17 @@ const actions = {
         return dispatch('getTaskList');
       })
   },
+  removeStoppedDownloads({dispatch, state, getters, commit}, payload = {}){
+    return serverAction.sendCall(state.currentServerUrl,
+      'aria2.purgeDownloadResult').then(() => {
+        commit('setSelected', {
+          selected: []
+        });
+        return dispatch('getTaskList');
+      })
+  },
   getTaskList({commit, state}, payload = {}){
-    if(!serverAction.get_s2a()){
+    if (!serverAction.get_s2a()) {
       return Promise.reject('获取global变量错误')
     }
     if (!state.currentServerUrl) {
@@ -191,20 +202,24 @@ const actions = {
       {
         "methodName": 'aria2.tellActive',
         "params": []
-      },
-      {
-        "methodName": 'aria2.tellWaiting',
-        "params": [0, 1000]
-      },
-      {
-        "methodName": 'aria2.tellStopped',
-        "params": [0, 1000]
-      },
-      {
-        "methodName": 'aria2.getGlobalStat',
-        "params": null
       }
     ];
+    if (!payload.activeList) {
+      calls.push(
+        {
+          "methodName": 'aria2.tellWaiting',
+          "params": [0, 1000]
+        },
+        {
+          "methodName": 'aria2.tellStopped',
+          "params": [0, 1000]
+        })
+    }
+
+    calls.push({
+      "methodName": 'aria2.getGlobalStat',
+      "params": null
+    });
     if (payload.loadOptions) {
       calls.push({
         "methodName": 'aria2.getGlobalOption',
@@ -214,28 +229,43 @@ const actions = {
     return !state.currentServerUrl ? Promise.reject('no server url') : serverAction.sendCall(state.currentServerUrl,
       'system.multicall', calls)
       .then((tasks) => {
+      let newTaskList;
+      if(!payload.activeList){
+        newTaskList={
+          active:tasks[0][0] || [],
+          waiting:tasks[1][0] || [],
+          stopped:tasks[2][0] || []
+        }
+      }else{
+        newTaskList={
+          ...state.taskList[state.currentServerUrl],
+          active:tasks[0][0] || []
+        }
+      }
         commit('setTaskList', {
-          list: _.concat(tasks[0][0] || [], tasks[1][0] || [], tasks[2][0] || []),
+          list: newTaskList,
+          //list: _.concat(tasks[0][0] || [], tasks[1][0] || [], tasks[2][0] || []),
           url: state.currentServerUrl
         });
+      let gloalStatIndex = payload.activeList?1:3;
         commit('setGlobalStat', {
-          globalStat: tasks[3][0]
+          globalStat: tasks[gloalStatIndex][0]
         });
-        if(_.get(window.safari||{},'extension.toolbarItems')){
-          if(tasks[3][0]&&tasks[3][0].numActive){
-            safari.extension.toolbarItems[0].badge = tasks[3][0].numActive
-          }else{
+        if (_.get(window.safari || {}, 'extension.toolbarItems')) {
+          if (newTaskList.active.length>0 || newTaskList.waiting.length>0) {
+            safari.extension.toolbarItems[0].badge = newTaskList.active.length + newTaskList.waiting.length
+          } else {
             safari.extension.toolbarItems[0].badge = 0
           }
         }
-        if (payload.loadOptions){
+        if (payload.loadOptions) {
           commit('setGlobalOption', {
-            globalOption: tasks[4][0]
+            globalOption: tasks[gloalStatIndex+1][0]
           });
 
         }
-        if (tasks[3] && tasks[3].code) {
-          return Promise.reject(tasks[3])
+        if (tasks[gloalStatIndex] && tasks[gloalStatIndex].code) {
+          return Promise.reject(tasks[gloalStatIndex])
         }
       }).catch(function (err) {
         commit('setGlobalStat', {
@@ -250,7 +280,7 @@ const actions = {
 // getters are functions
 const getters = {
   isDebug(state){
-    if(!serverAction.get_s2a()){
+    if (!serverAction.get_s2a()) {
       return false
     }
     return s2a.isDebug
@@ -263,6 +293,12 @@ const getters = {
       return download.gid;
     })
   },
+  getStoppedTaskGid(){
+    let rpcUrl = state.currentServerUrl;
+    return _.get(state,['taskList',rpcUrl,'stopped'],[]).map((download) => {
+      return download?download.gid:null;
+    })
+  },
   getGlobalStat(state){
     let stat = Object.assign({}, state.globalStat);
     stat.downloadSpeedText = util.bytesToSize(stat.downloadSpeed || 0) + '/s';
@@ -272,10 +308,11 @@ const getters = {
   taskLists(state){
     let sorting = ['complete', 'error', 'paused', 'waiting', 'active']
     // sort
-    let list = [];
     let rpcUrl = state.currentServerUrl;
-    if (state.taskList[rpcUrl]) {
-      list = state.taskList[rpcUrl].slice(0).sort((a, b) => {
+    let list = [];
+    if(state.taskList[rpcUrl]){
+      list = [].concat(state.taskList[rpcUrl].active||[],state.taskList[rpcUrl].waiting||[],state.taskList[rpcUrl].stopped||[]);
+      list = list.slice(0).sort((a, b) => {
         if (a.status === b.status) {
           return util.getEntryFileName(b) > util.getEntryFileName(a) ? 1 : -1
         } else {
