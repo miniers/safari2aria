@@ -113,6 +113,16 @@ const actions = {
     }
     s2a.openOptions();
   },
+  changeConfig({state},payload={config:{}}){
+    var config = JSON.parse(JSON.stringify({
+      ...state.config,
+      ...payload.config
+    }));
+    s2a.dispatchMessage({
+      name:'updateSafari2Aria',
+      message:config
+    })
+  },
   toggleSelectedStatus({dispatch, state, getters, commit}, payload = {}){
     let selected = _.get(payload, 'gids', state.selectedGids);
     let selectedTasks = getters.taskLists.filter(download => ~selected.indexOf(download.gid));

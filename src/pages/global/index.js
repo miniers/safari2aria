@@ -33,6 +33,7 @@ let messageAction = {
   //配置变更后保存并重启服务
   updateSafari2Aria: function (msg) {
     localStorage.setItem("safari2aria", JSON.stringify(msg));
+    //console.log('updateSafari2Aria:',msg)
     restoreOptions()
   },
   //快捷键
@@ -101,6 +102,7 @@ window.s2a={
     //sendMsg("changeRpc", rpcList[config.defaultRpcIndex].name);
   },
   //打开配置面板
+  dispatchMessage:messageHandler,
   openOptions,
   //重新获取配置
   getConfig(){
@@ -255,6 +257,7 @@ function sendToAria2 (e) {
   let aria = connect ? connect.aria2 : false;
   let header = config.enableCookie ? 'Cookie: ' + e[3] : '';
   if (aria && e[1]) {
+    //console.log('config.userAgent:',config.userAgent);
     aria.addUri([e[1]], {
       header: header,
       timeout:10,

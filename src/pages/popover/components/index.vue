@@ -1,79 +1,100 @@
 <template>
   <div class="pop_wrapper" v-hotkey="keymap">
-    <x-header class="pop_header" :left-options="{showBack: false}" :right-options="{showMore:true}"
-              @on-click-more="openOptionsPanel">
-      <popmenu ref="popmenu" placement="bottom" @on-show="popmenuShow" @on-hide="popmenuHide">
-        <div slot="content" class="selectRpcServer">
-          <group>
-            <cell @click.native="changeList({url:rpc.url})" :class="{acitve:rpc.url === currentServerUrl}"
-                  v-for="rpc in serverList"
-                  :key="rpc.url" :title="rpc.name"></cell>
-          </group>
-        </div>
-        <div class="rpcServer">
-          <button>{{currenServerName}}{{!globalStat ? '('+$t('ununited')+')' : ''}}</button>
-          <i class="material-icons">{{popmenuIsShow ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}}</i>
-        </div>
-      </popmenu>
-    </x-header>
-    <div class="globalStatus">
-      <div class="control">
-        <x-button mini plain v-show="taskLists.length>0" @click.native.stop="selecteAll()">
-          <i class="material-icons" v-show="selectedGids.length===0">done_all</i>
-          <i class="material-icons" v-show="selectedGids.length>0">cancel</i>
-        </x-button>
-        <div class="inner" v-show="selectedGids.length>0">
-          <x-button mini plain @click.native.stop="startSelectedDownloads()"><i class="material-icons">play_arrow</i></x-button>
-          <x-button mini plain @click.native.stop="pauseSelectedDownloads()"><i class="material-icons">pause</i></x-button>
-          <x-button mini plain @click.native.stop="removeSelectedDownloads()"><i class="material-icons">delete_forever</i></x-button>
-        </div>
-        <x-button mini plain v-show="getStoppedTaskGid.length>0 && selectedGids.length===0" @click.native.stop="removeStoppedDownloads()">{{$t('Remove stopped')}}</x-button>
+    <drawer
+      width="240px;"
+      :show.sync="menuShow"
+      show-mode="overlay"
+      placement="right"
+      :drawer-style="{'background-color':'#35495e', width: '240px'}">
+      <!-- drawer content -->
+      <div slot="drawer">
+        <group :title="$t('Options')" >
+          <cell :title="$t('Open options panel')" is-link="true" @click.native="menuShow = false;openOptionsPanel();">
+          </cell>
+        </group>
+        <group title="User-Agent" v-if="uaList&&uaList.length>1">
+          <radio :value="config.userAgent" :options="uaList" @on-change="changeUa"></radio>
+        </group>
       </div>
-      <div class="speed" :title="$t('Click to set global speed limit')" @click.nativ.stop="openAria2Options()">
-        <div class="up" v-if="getGlobalStat.uploadSpeed>0">
-          <i class="material-icons">arrow_upward</i>
-          {{getGlobalStat.uploadSpeedText}}
+      <x-header class="pop_header" :left-options="{showBack: false}" :right-options="{showMore:true}"
+                @on-click-more="menuShow = true">
+        <popmenu ref="popmenu" placement="bottom" @on-show="popmenuShow" @on-hide="popmenuHide">
+          <div slot="content" class="selectRpcServer">
+            <group>
+              <cell @click.native="changeList({url:rpc.url})" :class="{acitve:rpc.url === currentServerUrl}"
+                    v-for="rpc in serverList"
+                    :key="rpc.url" :title="rpc.name"></cell>
+            </group>
+          </div>
+          <div class="rpcServer">
+            <button>{{currenServerName}}{{!globalStat ? '(' + $t('ununited') + ')' : ''}}</button>
+            <i class="material-icons">{{popmenuIsShow ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}}</i>
+          </div>
+        </popmenu>
+      </x-header>
+      <div class="globalStatus">
+        <div class="control">
+          <x-button mini plain v-show="taskLists.length>0" @click.native.stop="selecteAll()">
+            <i class="material-icons" v-show="selectedGids.length===0">done_all</i>
+            <i class="material-icons" v-show="selectedGids.length>0">cancel</i>
+          </x-button>
+          <div class="inner" v-show="selectedGids.length>0">
+            <x-button mini plain @click.native.stop="startSelectedDownloads()"><i class="material-icons">play_arrow</i>
+            </x-button>
+            <x-button mini plain @click.native.stop="pauseSelectedDownloads()"><i class="material-icons">pause</i>
+            </x-button>
+            <x-button mini plain @click.native.stop="removeSelectedDownloads()"><i
+              class="material-icons">delete_forever</i></x-button>
+          </div>
+          <x-button mini plain v-show="getStoppedTaskGid.length>0 && selectedGids.length===0"
+                    @click.native.stop="removeStoppedDownloads()">{{$t('Remove stopped')}}
+          </x-button>
         </div>
-        <div class="down">
-          <i class="material-icons">arrow_downward</i>
-          {{getGlobalStat.downloadSpeedText}}
+        <div class="speed" :title="$t('Click to set global speed limit')" @click.nativ.stop="openAria2Options()">
+          <div class="up" v-if="getGlobalStat.uploadSpeed>0">
+            <i class="material-icons">arrow_upward</i>
+            {{getGlobalStat.uploadSpeedText}}
+          </div>
+          <div class="down">
+            <i class="material-icons">arrow_downward</i>
+            {{getGlobalStat.downloadSpeedText}}
+          </div>
         </div>
       </div>
-    </div>
-    <task-list class="pop_list" :list="taskLists" @click.native.stop="setSelected({selected:[]})">
+      <task-list class="pop_list" :list="taskLists" @click.native.stop="setSelected({selected:[]})">
 
-    </task-list>
+      </task-list>
 
-    <x-dialog v-model="showOptions" hide-on-blur :scroll="false" class="dialog-options">
-      <group>
-        <x-input :title="$t('max-overall-download-limit')" type="number" :show-clear="false"
-                 :min="0"
-                 v-model="change2GlobalOptions['max-overall-download-limit']">
-          <span slot="right">KB</span>
-        </x-input>
-        <x-input :title="$t('max-overall-upload-limit')" type="number" :show-clear="false"
-                 :min="0"
-                 v-model="change2GlobalOptions['max-overall-upload-limit']">
-          <span slot="right">KB</span>
-        </x-input>
-        <x-input :title="$t('max-concurrent-downloads')" type="number" :show-clear="false"
-                 :min="1"
-                 v-model="change2GlobalOptions['max-concurrent-downloads']">
-          <span slot="right">个</span>
-        </x-input>
-      </group>
-      <group class="buttonGroup">
-        <x-button @click.native="saveAria2Options()">{{$t('Save')}}</x-button>
-        <x-button @click.native="showOptions = false">{{$t('Cancel')}}</x-button>
-      </group>
-    </x-dialog>
-
+      <x-dialog v-model="showOptions" hide-on-blur :scroll="false" class="dialog-options">
+        <group>
+          <x-input :title="$t('max-overall-download-limit')" type="number" :show-clear="false"
+                   :min="0"
+                   v-model="change2GlobalOptions['max-overall-download-limit']">
+            <span slot="right">KB</span>
+          </x-input>
+          <x-input :title="$t('max-overall-upload-limit')" type="number" :show-clear="false"
+                   :min="0"
+                   v-model="change2GlobalOptions['max-overall-upload-limit']">
+            <span slot="right">KB</span>
+          </x-input>
+          <x-input :title="$t('max-concurrent-downloads')" type="number" :show-clear="false"
+                   :min="1"
+                   v-model="change2GlobalOptions['max-concurrent-downloads']">
+            <span slot="right">个</span>
+          </x-input>
+        </group>
+        <group class="buttonGroup">
+          <x-button @click.native="saveAria2Options()">{{$t('Save')}}</x-button>
+          <x-button @click.native="showOptions = false">{{$t('Cancel')}}</x-button>
+        </group>
+      </x-dialog>
+    </drawer>
   </div>
 </template>
 
 <script>
-  import Radio from '@/components/Radio.vue'
-  import {XHeader, Group, XDialog, XInput, XTextarea, CheckIcon, Flexbox, FlexboxItem, XButton, XSwitch, Cell} from 'vux'
+  import MRadio from '@/components/Radio.vue'
+  import {XHeader, Group,Radio, XDialog, XInput, XTextarea, Drawer, CheckIcon, Flexbox, FlexboxItem, XButton, XSwitch, Cell} from 'vux'
   import _ from 'lodash'
   import Popmenu from '@/components/popmenu.vue'
   import TaskList from './taskList.vue'
@@ -85,6 +106,7 @@
       XHeader,
       Group,
       Popmenu,
+      Drawer,
       XInput,
       XTextarea,
       CheckIcon,
@@ -95,19 +117,22 @@
       XButton,
       XSwitch,
       Cell,
-      Radio
+      Radio,
+      MRadio,
     },
     i18n: {
       messages: {
         'zh-CN': {
-          'ununited':'未连接',
-          'Save':'保存',
-          'Cancel':'取消',
-          'max-concurrent-downloads':'同时任务数量',
-          'max-overall-download-limit':'全局最大下载速度',
-          'max-overall-upload-limit':'全局最大上传速度',
-          'Remove stopped':'清除已停止',
-          'Click to set global speed limit':'点击设置全局限速',
+          'ununited': '未连接',
+          'Save': '保存',
+          'Options': '设置',
+          'Open options panel': '打开设置页面',
+          'Cancel': '取消',
+          'max-concurrent-downloads': '同时任务数量',
+          'max-overall-download-limit': '全局最大下载速度',
+          'max-overall-upload-limit': '全局最大上传速度',
+          'Remove stopped': '清除已停止',
+          'Click to set global speed limit': '点击设置全局限速',
         }
       }
     },
@@ -141,9 +166,9 @@
           },
           'alt+shift+l': (e) => {
             e.preventDefault();
-            if(safari.extension.toolbarItems[0].popover.visible){
+            if (safari.extension.toolbarItems[0].popover.visible) {
               safari.extension.toolbarItems[0].popover.hide();
-            }else{
+            } else {
               safari.extension.toolbarItems[0].showPopover()
             }
           },
@@ -152,6 +177,20 @@
             this.toggleSelectedStatus()
           }
         }
+      },
+      uaList(){
+        return _.get(this,'config.uaList',[/*{
+          name:'safari',
+          content:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/603.2.4 (KHTML, like Gecko) Version/10.1.1 Safari/603.2.4'
+        },{
+          name:'baidu',
+          content:'netdisk;5.3.4.5;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia'
+        }*/]).map(ua=>{
+          return {
+            key:ua.content,
+            value:ua.name,
+          }
+        });
       },
       ...mapGetters([
         'isDebug',
@@ -175,13 +214,14 @@
       return {
         listTimer: false,
         popmenuIsShow: false,
+        menuShow: false,
         showOptions: false,
         change2GlobalOptions: {}
       }
     },
     created(){
       this.init();
-      window.safari&&safari.application.addEventListener("popover", ()=>{
+      window.safari && safari.application.addEventListener("popover", () => {
         //console.log("popover open");
         this.init();
       }, true);
@@ -211,20 +251,28 @@
             //console.log('getTaskList');
             _this.getTaskList({
               loadOptions: !_this.globalOption || !_this.globalOption['max-concurrent-downloads'],
-              activeList:true
+              activeList: true
             })
-          }else{
+          } else {
             //console.log('stop getTaskList');
             clearInterval(_this.listTimer)
           }
         }, this.config.refreshTime ? this.config.refreshTime * 1000 : 5000)
       },
+      changeUa(ua){
+        this.menuShow = false;
+        this.changeConfig({
+          config:{
+            userAgent:ua
+          }
+        })
+      },
       saveAria2Options(){
         this.saveOptions({
           options: {
-            'max-overall-download-limit':this.change2GlobalOptions['max-overall-download-limit']*1024 + '',
-            'max-overall-upload-limit':this.change2GlobalOptions['max-overall-upload-limit']*1024 + '',
-            'max-concurrent-downloads':this.change2GlobalOptions['max-concurrent-downloads'],
+            'max-overall-download-limit': this.change2GlobalOptions['max-overall-download-limit'] * 1024 + '',
+            'max-overall-upload-limit': this.change2GlobalOptions['max-overall-upload-limit'] * 1024 + '',
+            'max-concurrent-downloads': this.change2GlobalOptions['max-concurrent-downloads'],
           }
         }).then(() => {
           this.showOptions = false;
@@ -236,9 +284,9 @@
       openAria2Options(){
         this.showOptions = true;
         this.change2GlobalOptions = {
-          'max-overall-download-limit':this.globalOption['max-overall-download-limit']/1024,
-          'max-overall-upload-limit':this.globalOption['max-overall-upload-limit']/1024,
-          'max-concurrent-downloads':this.globalOption['max-concurrent-downloads'],
+          'max-overall-download-limit': this.globalOption['max-overall-download-limit'] / 1024,
+          'max-overall-upload-limit': this.globalOption['max-overall-upload-limit'] / 1024,
+          'max-concurrent-downloads': this.globalOption['max-concurrent-downloads'],
         };
       },
       popmenuHide(){
@@ -253,7 +301,7 @@
         this.getTaskList();
       },
       selecteAll(){
-        this.setSelected({selected: this.selectedGids.length === this.getAllTaskGid.length?[]:this.getAllTaskGid})
+        this.setSelected({selected: this.selectedGids.length === this.getAllTaskGid.length ? [] : this.getAllTaskGid})
       },
       ...mapMutations([
         'refreshServerList',
@@ -269,6 +317,7 @@
         'removeStoppedDownloads',
         'toggleSelectedStatus',
         'openOptionsPanel',
+        'changeConfig',
         'saveOptions',
         'getTaskList' // 映射 this.getTaskList() 为 this.$store.dispatch('getTaskList')
       ]),
@@ -334,7 +383,7 @@
       flex: 1;
       padding: 0 10px;
       display: flex;
-      .inner{
+      .inner {
         display: flex;
       }
       .weui-btn {
@@ -345,8 +394,8 @@
         color: #ffffff;
         margin-top: 0;
         margin-right: 10px;
-        margin-left:0;
-        flex:none;
+        margin-left: 0;
+        flex: none;
         flex: none;
         height: 24px;
 

@@ -21,6 +21,7 @@ safari extension for use aria2 to replace safari default download
 10. 扩展按钮展示正在下载任务数量
 11. 一键导入下载链接至迅雷或百度离线
 12. English interface
+13. 多User-Agent支持
 
 
 ### 全局捷键：
