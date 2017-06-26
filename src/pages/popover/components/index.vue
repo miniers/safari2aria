@@ -9,7 +9,7 @@
       <!-- drawer content -->
       <div slot="drawer">
         <group :title="$t('Options')" >
-          <cell :title="$t('Open options panel')" is-link="true" @click.native="menuShow = false;openOptionsPanel();">
+          <cell :title="$t('Open options panel')" :is-link="true" @click.native="menuShow = false;openOptionsPanel();">
           </cell>
         </group>
         <group title="User-Agent" v-if="uaList&&uaList.length>1">
@@ -328,12 +328,15 @@
 
 <style lang="less">
   .pop_wrapper {
-    display: flex;
-    flex-direction: column;
+
     position: absolute;
     width: 100%;
     height: 100%;
     overflow: hidden;
+    .vux-drawer > .vux-drawer-body{
+      display: flex;
+      flex-direction: column;
+    }
     .pop_header {
       flex: none;
     }

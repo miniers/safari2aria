@@ -155,8 +155,6 @@
 
       },
       getStatus(){
-
-        debugger;
         return this.$t(this.download.status) || '';
       },
       name: function () {
