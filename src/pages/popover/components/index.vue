@@ -255,6 +255,7 @@
             })
           } else {
             //console.log('stop getTaskList');
+            this.menuShow=false;
             clearInterval(_this.listTimer)
           }
         }, this.config.refreshTime ? this.config.refreshTime * 1000 : 5000)

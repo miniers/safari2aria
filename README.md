@@ -52,12 +52,17 @@ content-disposition-default-utf8=true
 ```
 下载列表：
 
-![下载列表](https://user-images.githubusercontent.com/2039910/27314971-8d8f2a3a-55a9-11e7-90ad-a5751d30f38a.png)
+![下载列表](https://user-images.githubusercontent.com/2039910/27525446-7d831888-5a70-11e7-9e2a-12d89f98cd1b.png)
+
+
+切换UA：
+
+![切换UA](https://user-images.githubusercontent.com/2039910/27525463-ad48c45a-5a70-11e7-842c-f23cc53ae0cd.png)
 
 
 设置：
 
-![设置](https://user-images.githubusercontent.com/2039910/27327247-91090c1c-55e0-11e7-944f-5678760849ee.png)
+![设置](https://user-images.githubusercontent.com/2039910/27525469-bf00a3ac-5a70-11e7-891a-d382b12b7587.png)
 
 
 下载：
