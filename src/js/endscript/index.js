@@ -1,6 +1,7 @@
 import toastr from 'mini-toastr'
 import bdlx from './baiduLixian'
 import downloadAble from '@/public/downloadAble'
+import messageListener from '@/public/pageScriptMessage'
 
 if (window.top === window) {
   (function () {
@@ -45,32 +46,47 @@ if (window.top === window) {
     }
 
     function handleMessage (e) {
-      if (e.name === "changeRpc") {
-        toastr.success(getText('Success switch the default download service to') + e.message);
-      }
-      if (e.name === "currentRpc") {
-        toastr.success(getText('The current download service is') + e.message);
-      }
-      if (e.name === "showMassage") {
-        toastr[e.message.action || "success"](e.message.text, e.message.title);
-      }
-      if (e.name === "baiduLixian") {
-        if (location.href.match(/^https?:\/\/pan\.baidu\.com/)) {
-          bdlx(e.message.url)
-        }
-      }
-      if (e.name === "sendToEndScript") {
-        config = e.message || {};
-        catchIframe();
-        safari.self.tab.dispatchMessage("documentReady", {
-          cookie: document.cookie
-        });
-      }
-      if (e.message && e.message.hasCb) {
-        safari.self.tab.dispatchMessage([e.name, 'cb'].join('_'), {
-          cookie: document.cookie
-        });
-      }
+      messageListener({
+        listeners:[
+          {
+            name:"changeRpc",
+            cb:function (message) {
+              toastr.success(getText('Success switch the default download service to') + message);
+            }
+          },
+          {
+            name:"currentRpc",
+            cb:function (message) {
+              toastr.success(getText('The current download service is') + message);
+            }
+          },
+          {
+            name:"showMassage",
+            cb:function (message) {
+              toastr[message.action || "success"](message.text, message.title);
+            }
+          },
+          {
+            name:"baiduLixian",
+            cb:function (message) {
+              if (location.href.match(/^https?:\/\/pan\.baidu\.com/)) {
+                bdlx(message.url)
+              }
+            }
+          },
+          {
+            name:"sendToEndScript",
+            cb:function (message) {
+              config = message;
+              catchIframe();
+              safari.self.tab.dispatchMessage("documentReady", {
+                cookie: document.cookie
+              });
+            }
+          }
+        ]
+      })
+
     }
 
     function handleContextMenu (e) {
@@ -151,11 +167,11 @@ if (window.top === window) {
         appendTarget: document.body,
         timeout: 5000
       });
-      safari.self.tab.dispatchMessage("getConfig");
 
       document.addEventListener("contextmenu", handleContextMenu, !1);
+      handleMessage();
 
-      safari.self.addEventListener("message", handleMessage, !1);
+      //safari.self.addEventListener("message", handleMessage, !1);
       sendKeyPressEvent();
     }
 

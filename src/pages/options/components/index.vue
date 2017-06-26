@@ -92,6 +92,9 @@
       <x-switch :title="$t('xunlei')" v-model="enableXunleiLixian"></x-switch>
       <x-switch :title="$t('baidu')" v-model="enableBaiduLixian"></x-switch>
     </group>
+    <group :title="$t('other')">
+      <x-switch :title="$t('baidu pan check disable')" v-model="disableBaiduLimit"></x-switch>
+    </group>
     <group>
       <x-button @click.native="save(index)">{{$t('Save')}}</x-button>
     </group>
@@ -138,6 +141,7 @@
           'Refresh interval': '列表刷新间隔',
           's': '秒',
           'Save': '保存',
+          'baidu pan check disable': '屏蔽百度云大文件检测',
           'xunlei': '迅雷离线',
           'baidu': '百度离线',
           'Offline download': '右键离线下载菜单',
@@ -167,6 +171,7 @@
         ],
         language: navigator.language,
         enableBaiduLixian: true,
+        disableBaiduLimit: true,
         enableChart: false,
         baidupanAutoRestart: false,
         baidupanLimitSpeed: 1000,

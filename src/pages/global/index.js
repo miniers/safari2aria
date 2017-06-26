@@ -315,9 +315,14 @@ function sendMsg (type, msg, cb) {
     });
     messageAction[type + '_cb'] = cb;
   }
-  if(window.safari && safari.application.activeBrowserWindow.activeTab.page){
-    safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(type, msg);
-
+  if(window.safari){
+    _.get(safari,'application.browserWindows',[]).forEach(function (win) {
+      _.get(win,'tabs',[]).forEach(function (tab) {
+        if(tab.page){
+          tab.page.dispatchMessage(type, msg);
+        }
+      })
+    })
   }
 }
 //快捷键处理

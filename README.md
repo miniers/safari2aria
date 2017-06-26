@@ -12,7 +12,7 @@ safari extension for use aria2 to replace safari default download
 1. 拦截指定后缀文件下载
 2. 多aria2c服务支持
 3. 右键菜单指定aria2c服务
-4. 支持百度云([wap](https://pan.baidu.com/wap/home))和迅雷离线导出
+4. 支持百度云和迅雷离线导出
 5. 全局拦截模式
 6. 可配置下载成功后是否推送通知提醒
 7. **下载队列列表**
@@ -76,7 +76,7 @@ content-disposition-default-utf8=true
 - 如当前关闭了自动拦截默认，需长按**shift+cmd**并点击**取回本地**按钮即可导出下载至默认rpc服务器
 
 #### 百度云分享页导出：
-- 关闭cookie传递选项
+- 开启cookie传递选项
 - 点击下载，打开文件下载窗口
 - 如当前为自动拦截模式，长按**shift**并点击**普通下载**按钮即可导出下载至默认rpc服务器
 - 如当前关闭了自动拦截默认，需长按**shift+cmd**并点击**普通下载**按钮即可导出下载至默认rpc服务器

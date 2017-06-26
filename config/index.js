@@ -22,7 +22,7 @@ module.exports = {
     env: require('./prod.env'),
     pages,
     js,
-    vendorExclusive:['mini-toastr'],
+    vendorExclusive:['mini-toastr','pageScriptMessage','runInPage'],
     assetsRoot: path.resolve(__dirname, `${outputDir}`),
     assetsSubDirectory: 'static',
     assetsPublicPath: '',
