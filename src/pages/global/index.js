@@ -42,9 +42,8 @@ let messageAction = {
   },
   //配置更新后推送至页面脚本（主要用于开关iframe拦截）
   getConfig: function () {
-    sendMsg('sendToEndScript', config);
+    sendMsg('updateConfig', config);
   },
-  //配置更新后推送至页面脚本（主要用于开关iframe拦截）
   documentReady: function () {
     _.forEach(endPageReadyAction,function (obj) {
       obj.action();
@@ -296,7 +295,7 @@ function restoreOptions () {
   for (let a = 0; a < fileTypes.length; a++)fileTypes[a] = fileTypes[a].toLowerCase()
   rpcList = config.rpcList;
   //更新配置后需要同步至页面脚本
-  sendMsg('sendToEndScript', config);
+  sendMsg('updateConfig', config);
   initAria2();
   if(_.get(safari,'extension.popovers[0].contentWindow.tlwin.refreshServerList')){
     safari.extension.popovers[0].contentWindow.tlwin.refreshServerList();

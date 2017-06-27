@@ -1,8 +1,6 @@
 /**
  * Created by liukai on 2017/6/21.
  */
-import messagesAction from '@/public/pageScriptMessage'
-
 import run from '@/public/runInPage'
 
 function disableBaiduLimit () {
@@ -47,30 +45,7 @@ function disableBaiduLimit () {
   }
 }
 
-function getExtConfig (config) {
-  console.log('disableBaiduLimit:',config.disableBaiduLimit);
-  window.mDisableBaiduLimit = config.disableBaiduLimit;
-}
-
-
 if (window.top === window && location.href.match(/baidu/)) {
   run(disableBaiduLimit);
-  messagesAction({
-    send:[{
-      name:'getConfig',
-      params:''
-    }],
-    listeners:[
-      {
-        name:'sendToEndScript',
-        cb:function (config) {
-          //console.log('getConfig:',config);
-          run(getExtConfig,{
-            disableBaiduLimit:config.disableBaiduLimit
-          });
-        }
-      }
-    ]
-  })
 }
 

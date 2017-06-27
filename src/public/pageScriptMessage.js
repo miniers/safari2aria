@@ -13,13 +13,15 @@ export default function (config={}) {
         let count=0;
         window.extensionMessageListener.forEach(function (listener) {
           if(e.name === listener.name){
-            listener.cb&&listener.cb(e.message || {});
-            resolve(e.message || {});
-            count++;
+            if(!document.hidden || listener.background){
+              listener.cb&&listener.cb(e.message || {});
+              resolve(e.message || {});
+              count++;
+            }
           }
         });
         if(!count){
-          reject('no listener')
+          reject(document.hidden?'in background':'no listener')
         }
         if (e.message && e.message.hasCb) {
           safari.self.tab.dispatchMessage([e.name, 'cb'].join('_'), {

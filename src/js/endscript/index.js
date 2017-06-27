@@ -2,6 +2,8 @@ import toastr from 'mini-toastr'
 import bdlx from './baiduLixian'
 import downloadAble from '@/public/downloadAble'
 import messageListener from '@/public/pageScriptMessage'
+import runJs from '@/public/runInPage'
+
 
 if (window.top === window) {
   (function () {
@@ -44,9 +46,17 @@ if (window.top === window) {
       }
       return result
     }
+    function setExtWinConfig (config) {
+      console.log('disableBaiduLimit:',config.disableBaiduLimit);
+      window.mDisableBaiduLimit = config.disableBaiduLimit;
+    }
+
 
     function handleMessage (e) {
       messageListener({
+        send:[{
+          name:'getConfig'
+        }],
         listeners:[
           {
             name:"changeRpc",
@@ -75,12 +85,17 @@ if (window.top === window) {
             }
           },
           {
-            name:"sendToEndScript",
+            name:"updateConfig",
+            background:true,
             cb:function (message) {
               config = message;
               catchIframe();
               safari.self.tab.dispatchMessage("documentReady", {
                 cookie: document.cookie
+              });
+              //百度网盘取消限制
+              location.href.match(/baidu/) && runJs(setExtWinConfig,{
+                disableBaiduLimit:config.disableBaiduLimit
               });
             }
           }
