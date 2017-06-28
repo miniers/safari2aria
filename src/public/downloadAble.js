@@ -10,10 +10,13 @@ export default function downloadAble (url, config = {}, keypress = {}) {
     let a = url.substr(url.lastIndexOf(".") + 1);
     a = a.toLowerCase();
     let fileTypes = config.filetypes ? config.filetypes.split(" ") : [];
+    //如果按着shift则会强行拦截下载
+    if(keypress.isShiftPressd){
+      return true
+    }
     //判断url中文件后缀是否在配置内
     for (let n = 0; n < fileTypes.length; n++) {
-      //如果按着shift则会强行拦截下载
-      if (a === fileTypes[n].toLowerCase() || keypress.isShiftPressd) {
+      if (a === fileTypes[n].toLowerCase()) {
         return true
       }
     }

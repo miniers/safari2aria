@@ -262,8 +262,8 @@ const actions = {
           globalStat: tasks[gloalStatIndex][0]
         });
         if (_.get(window.safari || {}, 'extension.toolbarItems')) {
-          if (newTaskList.active.length>0 || newTaskList.waiting.length>0) {
-            safari.extension.toolbarItems[0].badge = newTaskList.active.length + newTaskList.waiting.length
+          if (newTaskList.active.length>0 || _.get(newTaskList,'waiting',[]).length>0) {
+            safari.extension.toolbarItems[0].badge = newTaskList.active.length + _.get(newTaskList,'waiting',[]).length
           } else {
             safari.extension.toolbarItems[0].badge = 0
           }

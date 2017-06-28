@@ -46,9 +46,10 @@ if (window.top === window) {
       }
       return result
     }
-    function setExtWinConfig (config) {
+    function setExtWinConfig (config,scriptId) {
       console.log('disableBaiduLimit:',config.disableBaiduLimit);
       window.mDisableBaiduLimit = config.disableBaiduLimit;
+      document.getElementById(scriptId).remove();
     }
 
 
@@ -86,17 +87,19 @@ if (window.top === window) {
           },
           {
             name:"updateConfig",
-            background:true,
             cb:function (message) {
+              let lastConfig = config || {};
               config = message;
               catchIframe();
               safari.self.tab.dispatchMessage("documentReady", {
                 cookie: document.cookie
               });
               //百度网盘取消限制
-              location.href.match(/baidu/) && runJs(setExtWinConfig,{
-                disableBaiduLimit:config.disableBaiduLimit
-              });
+              if(location.href.match(/baidu/) && config.disableBaiduLimit !== lastConfig.disableBaiduLimit){
+                runJs(setExtWinConfig,{
+                  disableBaiduLimit:config.disableBaiduLimit
+                });
+              }
             }
           }
         ]
