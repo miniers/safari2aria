@@ -8,7 +8,10 @@
          :style="{width:progress}"><span v-show="showPercent">{{parseInt(progress)}}</span></div>
     <div class="info">
       <div class="left">
-        <div class="name" :title="name">
+        <div v-if="isLocal" class="name" :title="name">
+          <a :href="path">{{name}}</a>
+        </div>
+        <div v-if="!isLocal" class="name" :title="name">
           {{name}}
         </div>
         <div class="status">
@@ -44,7 +47,7 @@
 <script>
   import {XHeader, Group, XInput, XTextarea, CellBox, CheckIcon, Flexbox, FlexboxItem, XButton, XSwitch, Cell} from 'vux'
   import * as util from '@/public/util'
-  import {mapActions, mapState} from 'vuex'
+  import {mapActions,mapGetters, mapState} from 'vuex'
   import ECharts from 'vue-echarts/components/ECharts.vue'
   import graphic from 'echarts/lib/util/graphic'
   import 'echarts/lib/chart/bar'
@@ -161,7 +164,7 @@
         return util.getEntryFileName(this.download)
       },
       path:function () {
-        return ['file://',this.download.dir].join('');
+        return ['showinfinder://file=',this.download.dir,'/',this.name].join('');
       },
       progress: function () {
         let progress = this.download.totalLength === '0' ? 0 : this.download.completedLength / this.download.totalLength;
@@ -190,7 +193,10 @@
       },
       ...mapState({
         'globalConfig': 'config'
-      })
+      }),
+      ...mapGetters([
+        'isLocal'
+      ]),
     },
     methods: {
       showAction(){
@@ -292,6 +298,12 @@
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 300px;
+        a{
+          color: #36495d;
+          &:hover{
+            color: #1e2936;
+          }
+        }
       }
       .status {
         flex: 1;

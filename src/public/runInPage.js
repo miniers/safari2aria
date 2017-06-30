@@ -11,7 +11,7 @@ function getId () {
   return Math.abs(hash);
 }
 
-export default function (fn, args) {
+export default function (fn, args={}) {
   var script = document.createElement('script');
   script.type = 'text/javascript';
   script.id = ['run_js',getId()].join('_');

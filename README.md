@@ -22,7 +22,7 @@ safari extension for use aria2 to replace safari default download
 11. 一键导入下载链接至迅雷或百度离线
 12. English interface
 13. 多User-Agent支持
-
+14. 在 Finder 中显示
 
 ### 全局捷键：
 功能 | 快捷键
@@ -50,6 +50,9 @@ safari extension for use aria2 to replace safari default download
 content-disposition-default-utf8=true
 
 ```
+3. 如需使用"在 Finder 中显示",请将safari2aria.app放置于**应用程序**目录中，并手动执行程序一次来注册url schemes。插件将自动识别rpc地址为127.0.0.1或者localhost的服务器，如需手动指定其他地址的aria2为本地，请在rpc名称中添加** _local **来辅助识别
+
+
 下载列表：
 
 ![下载列表](https://user-images.githubusercontent.com/2039910/27525446-7d831888-5a70-11e7-9e2a-12d89f98cd1b.png)

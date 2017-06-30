@@ -135,6 +135,7 @@ function initAria2 () {
     };
     if (aria2Connects[rpc.url]) {
       newConnect[rpc.url] = aria2Connects[rpc.url];
+      newConnect[rpc.url].rpc.name=rpc.name;
       delete aria2Connects[rpc.url];
     } else {
       let aria = new Aria2(options);
@@ -215,7 +216,6 @@ function initEvent (connect, rpcName) {
      toast.success(['添加到', rpcName, '成功', config.enableCookie ? "" : '(关闭cookie)'])
      connect.started=true;
      }*/
-    refreshToolbarItem()
   };
   let downloadStop = function (e) {
     refreshToolbarItem()
@@ -268,6 +268,7 @@ function sendToAria2 (e) {
       "user-agent": config.userAgent
     }).then(() => {
       toast.success([getText('Successfully added to the'), connect.rpc.name, config.enableCookie ? "" : '(with cookie)'])
+      refreshToolbarItem()
     }).catch(err => {
       toast.error([getText('Fail to Added to the'), connect.rpc.name, getText('failure', {notfailback: true}), config.enableCookie ? "" : '(without cookie)'])
       console.log(err);

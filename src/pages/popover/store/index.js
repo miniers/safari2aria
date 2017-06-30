@@ -295,6 +295,10 @@ const getters = {
     }
     return s2a.isDebug
   },
+  isLocal:state=>{
+    let rpcUrl = state.currentServerUrl;
+    return rpcUrl.match(/localhost|127\.0\.0\.1/) || state.serverList[rpcUrl].name.match(/local/)
+  },
   serverList: state => {
     return state.serverList;
   },
