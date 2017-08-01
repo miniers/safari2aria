@@ -1,4 +1,4 @@
-import toastr from 'mini-toastr'
+import toastr from '@/public/mini-toastr'
 import bdlx from './baiduLixian'
 import downloadAble from '@/public/downloadAble'
 import messageListener from '@/public/pageScriptMessage'
