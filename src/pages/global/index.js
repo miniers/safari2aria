@@ -191,7 +191,9 @@ function initPush (connect, name) {
       socketReconnectTimer = socketReconnectTimer || setInterval(() => {
           let count = 0;
           _.forEach(aria2Connects, (conn) => {
-            count += initPush(conn) ? 0 : 1;
+            if(conn.push){
+              count += initPush(conn) ? 0 : 1;
+            }
           });
           if (!count) {
             clearInterval(socketReconnectTimer);
