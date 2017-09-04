@@ -5,11 +5,19 @@ import _ from 'lodash'
 import {Aria2} from '@/pages/global/aria2'
 
 let aria2Connects={
-  "https://token:123456@m127.0.0.1:6800/jsonrpc": {
+  "https://token:880531lk@mac.lk.mk:6800/jsonrpc": {
     aria2: '',
     rpc: {
       name: 'mac',
-      url: 'https://token:123456@m127.0.0.1:6800/jsonrpc'
+      url: 'https://token:880531lk@mac.lk.mk:6800/jsonrpc'
+    },
+    push: true
+  },
+  "https://token:880531lk@n.lk.mk:6801/jsonrpc": {
+    aria2: '',
+    rpc: {
+      name: 'nas',
+      url: 'https://token:880531lk@n.lk.mk:6801/jsonrpc'
     },
     push: true
   }
@@ -48,6 +56,7 @@ export default {
         return {
           config: {
             refreshTime: 1,
+            userAgent:'netdisk;5.3.4.5;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia'
           },
           aria2Connects: aria2Connects
         }
