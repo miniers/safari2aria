@@ -15,6 +15,9 @@
         <group title="User-Agent" v-if="uaList&&uaList.length>1">
           <radio :value="config.userAgent" :options="uaList" @on-change="changeUa"></radio>
         </group>
+        <group :title="$t('Download Path')" v-if="pathList&&pathList.length>1">
+          <radio :value="config.downloadPath" :options="pathList" @on-change="changePath"></radio>
+        </group>
       </div>
       <x-header class="pop_header" :left-options="{showBack: false}" :right-options="{showMore:true}"
                 @on-click-more="menuShow = true">
@@ -125,6 +128,7 @@
         'zh-CN': {
           'ununited': '未连接',
           'Save': '保存',
+          'Download Path': '下载路径',
           'Options': '设置',
           'Open options panel': '打开设置页面',
           'Cancel': '取消',
@@ -191,6 +195,19 @@
             value:ua.name,
           }
         });
+      },
+      pathList(){
+        let pathList =  _.get(this,'config.pathList',[]).map(path=>{
+          return {
+            key:path.content,
+            value:path.name,
+          }
+        });
+        pathList.unshift({
+          key:'',
+          value:'默认',
+        });
+        return pathList
       },
       ...mapGetters([
         'isDebug',
@@ -265,6 +282,14 @@
         this.changeConfig({
           config:{
             userAgent:ua
+          }
+        })
+      },
+      changePath(path){
+        this.menuShow = false;
+        this.changeConfig({
+          config:{
+            downloadPath:path
           }
         })
       },

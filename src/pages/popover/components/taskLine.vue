@@ -164,7 +164,7 @@
         return util.getEntryFileName(this.download)
       },
       path:function () {
-        return ['showinfinder://file=',this.download.dir,'/',this.name].join('');
+        return this.download.status === 'complete'?['showinfinder://file=',this.download.dir,'/',this.name].join(''):'javascript:;';
       },
       progress: function () {
         let progress = this.download.totalLength === '0' ? 0 : this.download.completedLength / this.download.totalLength;

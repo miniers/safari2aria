@@ -79,7 +79,48 @@
           <x-button @click.native="delUa(index)" v-if="uaList.length>1" mini>{{$t('Delete')}}</x-button>
         </flexbox>
       </div>
-      <!--<x-textarea title="User-agent" :show-clear="false" v-model="userAgent"></x-textarea>-->
+    </group>
+    <group :title="$t('Download Path')">
+
+      <div class="cell pathList">
+        <flexbox class="header">
+          <flexbox-item :span="1/20">
+            {{$t('Default')}}
+          </flexbox-item>
+          <flexbox-item :span="2/20">
+            {{$t('Name')}}
+          </flexbox-item>
+          <flexbox-item>
+            {{$t('Path')}}
+          </flexbox-item>
+          <div class="action">
+            <x-button @click.native="addPath" mini>{{$t('Add')}}</x-button>
+          </div>
+        </flexbox>
+        <flexbox>
+          <flexbox-item :span="1/20">
+            <Radio :val="''" :value.sync="downloadPath"/>
+          </flexbox-item>
+          <flexbox-item class="name" :span="2/20">
+            <x-input :show-clear="false" :value="$t('Default')"></x-input>
+          </flexbox-item>
+          <flexbox-item class="content">
+            <x-input :show-clear="false" :value="''"></x-input>
+          </flexbox-item>
+        </flexbox>
+        <flexbox v-for="(path,index) in pathList" :key="index">
+          <flexbox-item :span="1/20">
+            <Radio :val="path.content" :value.sync="downloadPath"/>
+          </flexbox-item>
+          <flexbox-item class="name" :span="2/20">
+            <x-input :show-clear="false" v-model="path.name"></x-input>
+          </flexbox-item>
+          <flexbox-item class="content">
+            <x-input :show-clear="false" v-model="path.content"></x-input>
+          </flexbox-item>
+          <x-button @click.native="delPath(index)" v-if="pathList.length>1" mini>{{$t('Delete')}}</x-button>
+        </flexbox>
+      </div>
     </group>
     <group :title="$t('Download popover')">
       <x-input :title="$t('Refresh interval')" class="right_input" type="number" :show-clear="false"
@@ -132,6 +173,8 @@
           'Push': '推送',
           'Name': '名称',
           'Url': '地址',
+          'Path': '路径',
+          'Download Path': '下载路径',
           'Action': '操作',
           'Delete': '删除',
           'Auxiliary Settings': '辅助设置',
@@ -165,6 +208,7 @@
         catchIframe: true,
         enableTypefiles: true,
         enableXunleiLixian: true,
+        downloadPath: "",
         languageList: [
           {key: 'en', value: 'English'},
           {key: 'zh-CN', value: '中文'}
@@ -181,6 +225,7 @@
           name: 'safari 10',
           content: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/603.2.4 (KHTML, like Gecko) Version/10.1.1 Safari/603.2.4'
         }],
+        pathList: [],
         filetypes: "mp4 flv m4v asf mpeg mkv mpg divx div 3gp wmv avi mov vob ogg ogv webm flac m4a mp3 aac wma wav ape exe app pkg zip rar dmg iso 7z jpg png jpeg tiff gif bmp pdf epub pages pptx keynote rtf doc docx",
         rpcList: [{
           name: 'localhost',
@@ -208,15 +253,25 @@
       addUa: function () {
         this.uaList.push({
           name: '',
-          url: ''
+          content: ''
         })
       },
       delUa: function (index) {
         this.uaList.splice(index, 1)
       },
+      addPath: function () {
+        this.pathList.push({
+          name: '',
+          content: ''
+        })
+      },
+      delPath: function (index) {
+        this.pathList.splice(index, 1)
+      },
       save: function () {
-        var config = JSON.parse(JSON.stringify(this.$data));
+        let config = JSON.parse(JSON.stringify(this.$data));
         safari.self.tab.dispatchMessage("updateSafari2Aria", config);
+        localStorage.setItem("safari2aria", JSON.stringify(config));
         window.close()
       }
     }

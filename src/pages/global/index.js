@@ -15,6 +15,7 @@ let i18n = {
     'Downloaded to': '下载至',
     'success': '成功',
     'Successfully added to the': '成功添加至',
+    'Fail to Added to the': '无法添加至',
     'Added to the': '添加至',
     'failure': '失败',
     'Failed to get task information': '获取任务信息失败',
@@ -258,21 +259,26 @@ function getTaskName (aria, gid) {
 }
 //发送任务至aria2
 function sendToAria2 (e) {
+  let options={};
   let connect = aria2Connects[e[0].url];
   let aria = connect ? connect.aria2 : false;
   let header = config.enableCookie ? 'Cookie: ' + e[3] : '';
+  if(config.downloadPath){
+    options.dir = config.downloadPath
+  }
   if (aria && e[1]) {
     //console.log('config.userAgent:',config.userAgent);
     aria.addUri([e[1]], {
       header: header,
       timeout: 10,
       'content-disposition-default-utf8': true,
-      "user-agent": config.userAgent
+      "user-agent": config.userAgent,
+      ...options
     }).then(() => {
       toast.success([getText('Successfully added to the'), connect.rpc.name, config.enableCookie ? "" : '(with cookie)'])
       refreshToolbarItem()
     }).catch(err => {
-      toast.error([getText('Fail to Added to the'), connect.rpc.name, getText('failure', {notfailback: true}), config.enableCookie ? "" : '(without cookie)'])
+      toast.error([getText('Fail to Added to the'), connect.rpc.name, config.enableCookie ? "" : '(without cookie)',`(${err.message})`]);
       console.log(err);
     })
   } else {
