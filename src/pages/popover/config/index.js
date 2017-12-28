@@ -48,6 +48,7 @@ export default {
         return {
           config: {
             refreshTime: 1,
+            userAgent:'netdisk;5.3.4.5;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia'
           },
           aria2Connects: aria2Connects
         }
