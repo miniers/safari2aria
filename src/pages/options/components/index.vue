@@ -135,6 +135,9 @@
     </group>
     <group :title="$t('other')">
       <x-switch :title="$t('baidu pan check disable')" v-model="disableBaiduLimit"></x-switch>
+      <x-input :title="$t('baidu pan extend cookie')" :show-clear="false"
+               v-model="baiduPanCookie">
+      </x-input>
     </group>
     <group>
       <x-button @click.native="save(index)">{{$t('Save')}}</x-button>
@@ -185,6 +188,7 @@
           's': '秒',
           'Save': '保存',
           'baidu pan check disable': '屏蔽百度云大文件检测',
+          'baidu pan extend cookie': '百度盘扩展cookie',
           'xunlei': '迅雷离线',
           'baidu': '百度离线',
           'Offline download': '右键离线下载菜单',
@@ -219,6 +223,7 @@
         enableChart: false,
         baidupanAutoRestart: false,
         baidupanLimitSpeed: 1000,
+        baiduPanCookie: '',
         defaultRpcIndex: 0,
         refreshTime: 5,
         uaList: [{

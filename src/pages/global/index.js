@@ -263,6 +263,9 @@ function sendToAria2 (e) {
   let connect = aria2Connects[e[0].url];
   let aria = connect ? connect.aria2 : false;
   let header = config.enableCookie ? 'Cookie: ' + e[3] : '';
+  if(config.baiduPanCookie){
+    header = [header,config.baiduPanCookie].join('; ')
+  }
   if(config.downloadPath){
     options.dir = config.downloadPath
   }

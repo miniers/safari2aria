@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Miniers</string>
 	<key>Builder Version</key>
-	<string>13604.5.2</string>
+	<string>13604.5.6</string>
 	<key>CFBundleDisplayName</key>
 	<string>safari2aria</string>
 	<key>CFBundleIdentifier</key>
@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.9.3</string>
+	<string>2.9.5</string>
 	<key>CFBundleVersion</key>
-	<string>2.9.3</string>
+	<string>2.9.5</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
