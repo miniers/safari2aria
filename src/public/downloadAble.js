@@ -22,6 +22,11 @@ export default function downloadAble(url, config = {}, keypress = {}) {
     if(keypress.isShiftPressd){
       return true
     }
+    
+    // 如果 pathname 没有"."，提前返回false
+    if(!pathname.includes(".")){
+      return false;
+    }
 
     //判断 pathname 中文件后缀是否在配置内
     const pathname_lowercase = pathname.toLowerCase();
@@ -30,7 +35,7 @@ export default function downloadAble(url, config = {}, keypress = {}) {
           .toLowerCase()
           .split(/\s+/)
           .map(filetype => "." + filetype)
-          .some(ext => pathname_lowercase.endswith(ext))
+          .some(ext => pathname_lowercase.endsWith(ext))
       : false;
   }
 
