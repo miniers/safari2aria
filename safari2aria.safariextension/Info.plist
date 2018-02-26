@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Miniers</string>
 	<key>Builder Version</key>
-	<string>13604.5.6</string>
+	<string>13605.1.27.2.1</string>
 	<key>CFBundleDisplayName</key>
 	<string>safari2aria</string>
 	<key>CFBundleIdentifier</key>
@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.9.5</string>
+	<string>2.9.6</string>
 	<key>CFBundleVersion</key>
-	<string>2.9.5</string>
+	<string>2.9.6</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
@@ -87,7 +87,7 @@
 	<key>Update From Gallery</key>
 	<true/>
 	<key>Update Manifest URL</key>
-	<string>https://miniers.github.io/safari2aria/update.plist?t=2.9.3</string>
+	<string>https://miniers.github.io/safari2aria/update.plist?t=2.9.6</string>
 	<key>Website</key>
 	<string>https://github.com/miniers/safari2aria</string>
 </dict>
