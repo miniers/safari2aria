@@ -1,24 +1,38 @@
 /**
  * Created by liukai on 2017/6/23.
  */
-export default function downloadAble (url, config = {}, keypress = {}) {
+export default function downloadAble(url, config = {}, keypress = {}) {
+
+  let _url;
+  try {
+    _url = new URL(url);
+  } catch (e) {
+    return false;
+  }
+
+  const { pathname, protocol } = _url;
+
   //通过cmd来切换自动拦截状态
-  if (url && !keypress[82] && config.enableTypefiles ? !keypress.isCommandPressed : keypress.isCommandPressed) {
-    if (url.match(/magnet:[^\\"]+/)) {
-      return true
+  if (!keypress[82] && config.enableTypefiles ? !keypress.isCommandPressed : keypress.isCommandPressed) {
+    if (protocol === "magnet:") {
+      return true;
     }
-    let a = url.substr(url.lastIndexOf(".") + 1);
-    a = a.toLowerCase();
-    let fileTypes = config.filetypes ? config.filetypes.split(" ") : [];
+
     //如果按着shift则会强行拦截下载
     if(keypress.isShiftPressd){
       return true
     }
-    //判断url中文件后缀是否在配置内
-    for (let n = 0; n < fileTypes.length; n++) {
-      if (a === fileTypes[n].toLowerCase()) {
-        return true
-      }
-    }
+
+    //判断 pathname 中文件后缀是否在配置内
+    const pathname_lowercase = pathname.toLowerCase();
+    return config.filetypes
+      ? config.filetypes
+          .toLowerCase()
+          .split(/\s+/)
+          .map(filetype => "." + filetype)
+          .some(ext => pathname_lowercase.endswith(ext))
+      : false;
   }
+
+  return false;
 }
