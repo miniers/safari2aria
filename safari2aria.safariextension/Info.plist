@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.9.6</string>
+	<string>2.9.7</string>
 	<key>CFBundleVersion</key>
-	<string>2.9.6</string>
+	<string>2.9.7</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
@@ -87,7 +87,7 @@
 	<key>Update From Gallery</key>
 	<true/>
 	<key>Update Manifest URL</key>
-	<string>https://miniers.github.io/safari2aria/update.plist?t=2.9.6</string>
+	<string>https://miniers.github.io/safari2aria/update.plist?t=2.9.7</string>
 	<key>Website</key>
 	<string>https://github.com/miniers/safari2aria</string>
 </dict>
