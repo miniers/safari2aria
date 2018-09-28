@@ -48,7 +48,7 @@ export default {
         return {
           config: {
             refreshTime: 1,
-            userAgent:'netdisk;5.3.4.5;PC;PC-Windows;5.1.2600;WindowsBaiduYunGuanJia'
+            userAgent:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
           },
           aria2Connects: aria2Connects
         }

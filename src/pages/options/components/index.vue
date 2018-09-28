@@ -148,6 +148,7 @@
 <script>
   import Radio from '@/components/Radio.vue'
   import {XHeader, Selector, Group, XInput, XTextarea, CheckIcon, Flexbox, FlexboxItem, XButton, XSwitch, Cell} from 'vux'
+  import defConfig from '@/config/config.json'
 
   export default {
     components: {
@@ -199,9 +200,9 @@
     data () {
       let config = localStorage.getItem("safari2aria");
       try {
-        config = JSON.parse(config || "{}");
+        config = config?JSON.parse(config):defConfig;
       } catch (err) {
-        config = {};
+        config = defConfig;
       }
       if (config.language) {
         this.$i18n.locale = config.language

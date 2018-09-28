@@ -1,0 +1,34 @@
+{
+  "enableCookie": true,
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/603.2.4 (KHTML, like Gecko) Version/10.1.1 Safari/603.2.4",
+  "catchIframe": true,
+  "enableTypefiles": false,
+  "enableXunleiLixian": false,
+  "downloadPath": "",
+  "languageList": [{"key": "en", "value": "English"}, {"key": "zh-CN", "value": "中文"}],
+  "language": "zh-CN",
+  "enableBaiduLixian": true,
+  "disableBaiduLimit": true,
+  "enableChart": false,
+  "baidupanAutoRestart": false,
+  "baidupanLimitSpeed": 1000,
+  "baiduPanCookie": "BDUSS=111111",
+  "defaultRpcIndex": 0,
+  "refreshTime": 1,
+  "uaList": [{
+    "name": "safari 10",
+    "content": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/603.2.4 (KHTML, like Gecko) Version/10.1.1 Safari/603.2.4"
+  }],
+  "pathList":  [{"name": "电影", "content": "/movie/电影"}],
+  "filetypes": "",
+  "rpcList": [
+    {
+      "name": "dsm",
+      "push": false,
+      "url": "http://token:a123@10.1.1.5:6800/jsonrpc"
+    },{
+      "name": "mac",
+      "push": true,
+      "url": "http://token:a123@127.0.0.1:6800/jsonrpc"
+    }]
+}

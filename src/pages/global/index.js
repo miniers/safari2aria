@@ -1,6 +1,8 @@
 import {Aria2} from './aria2'
 import downloadAble from '@/public/downloadAble'
 import _ from 'lodash'
+import defConfig from '@/config/config.json'
+
 let config = {
   defaultRpcIndex: 0
 };
@@ -45,7 +47,7 @@ let messageAction = {
   getConfig: function () {
     sendMsg('updateConfig', {
       ...config,
-      sendAll:true
+      sendAll: true
     });
   },
   documentReady: function () {
@@ -89,7 +91,7 @@ let toast = {
 //和列表页的胡同变量
 window.s2a = {
   //切换默认服务（列表页切换后同步用）
-  changeServer(url){
+  changeServer(url) {
     let serverIndex;
     _.forEach(rpcList, (rpc, index) => {
       if (rpc.url === url) {
@@ -108,7 +110,7 @@ window.s2a = {
   dispatchMessage: messageHandler,
   openOptions,
   //重新获取配置
-  getConfig(){
+  getConfig() {
     return {
       config,
       aria2Connects
@@ -116,12 +118,13 @@ window.s2a = {
   }
 };
 
-function getText (text, options = {}) {
+function getText(text, options = {}) {
   let lang = config.language || navigator.language;
   return _.get(i18n, [lang, text], options.notfailback ? '' : [text, ' '].join(''))
 }
+
 //初始化aria2服务
-function initAria2 () {
+function initAria2() {
 
   let newConnect = {}
   //从配置中处理服务器地址
@@ -136,7 +139,7 @@ function initAria2 () {
     };
     if (aria2Connects[rpc.url]) {
       newConnect[rpc.url] = aria2Connects[rpc.url];
-      newConnect[rpc.url].rpc.name=rpc.name;
+      newConnect[rpc.url].rpc.name = rpc.name;
       delete aria2Connects[rpc.url];
     } else {
       let aria = new Aria2(options);
@@ -167,8 +170,9 @@ function initAria2 () {
   }
   aria2Connects = newConnect;
 }
+
 //初始化推送服务
-function initPush (connect, name) {
+function initPush(connect, name) {
   let aria = connect.aria2;
   if (connect.aria2 && connect.aria2.socket && aria.socket.readyState === 1) {
     return true
@@ -190,29 +194,31 @@ function initPush (connect, name) {
       }
       //开启定时器定时重连
       socketReconnectTimer = socketReconnectTimer || setInterval(() => {
-          let count = 0;
-          _.forEach(aria2Connects, (conn) => {
-            if(conn.push){
-              count += initPush(conn) ? 0 : 1;
-            }
-          });
-          if (!count) {
-            clearInterval(socketReconnectTimer);
+        let count = 0;
+        _.forEach(aria2Connects, (conn) => {
+          if (conn.push) {
+            count += initPush(conn) ? 0 : 1;
           }
-        }, 10000)
+        });
+        if (!count) {
+          clearInterval(socketReconnectTimer);
+        }
+      }, 10000)
     });
     return false
   }
 
 }
+
 //拉取最新任务状态并刷新扩展按钮小红点
-function refreshToolbarItem () {
+function refreshToolbarItem() {
   //判断是否在
   if (_.get(safari, 'extension.popovers[0].contentWindow.tlwin.refreshTaskList')) {
     safari.extension.popovers[0].contentWindow.tlwin.refreshTaskList();
   }
 }
-function initEvent (connect, rpcName) {
+
+function initEvent(connect, rpcName) {
   let aria = connect.aria2;
   let downloadStart = function (e) {
     /*  if(!connect.started){
@@ -238,8 +244,9 @@ function initEvent (connect, rpcName) {
     downloadComplete(e, true)
   }
 }
+
 //获取任务名称
-function getTaskName (aria, gid) {
+function getTaskName(aria, gid) {
   return aria.tellStatus(gid, ['bittorrent'])
     .then((bt) => {
       return aria.getFiles(gid)
@@ -257,16 +264,17 @@ function getTaskName (aria, gid) {
       toast.error([getText('Failed to get task information')])
     })
 }
+
 //发送任务至aria2
-function sendToAria2 (e) {
-  let options={};
+function sendToAria2(e) {
+  let options = {};
   let connect = aria2Connects[e[0].url];
   let aria = connect ? connect.aria2 : false;
   let header = config.enableCookie ? 'Cookie: ' + e[3] : '';
-  if(config.baiduPanCookie){
-    header = [header,config.baiduPanCookie].join('; ')
+  if (config.baiduPanCookie) {
+    header = [header, config.baiduPanCookie].join('; ')
   }
-  if(config.downloadPath){
+  if (config.downloadPath) {
     options.dir = config.downloadPath
   }
   if (aria && e[1]) {
@@ -281,7 +289,7 @@ function sendToAria2 (e) {
       toast.success([getText('Successfully added to the'), connect.rpc.name, config.enableCookie ? "" : '(with cookie)'])
       refreshToolbarItem()
     }).catch(err => {
-      toast.error([getText('Fail to Added to the'), connect.rpc.name, config.enableCookie ? "" : '(without cookie)',`(${err.message})`]);
+      toast.error([getText('Fail to Added to the'), connect.rpc.name, config.enableCookie ? "" : '(without cookie)', `(${err.message})`]);
       console.log(err);
     })
   } else {
@@ -289,43 +297,47 @@ function sendToAria2 (e) {
 
   }
 }
+
 //打开设置面板
-function openPreferences (e) {
+function openPreferences(e) {
   "showOptions" === e.key && openOptions()
 }
+
 //打开设置面板
-function openOptions () {
+function openOptions() {
   safari.application.activeBrowserWindow.openTab().url = safari.extension.baseURI + "options.html"
 }
+
 //还原配置
-function restoreOptions () {
+function restoreOptions() {
   config = localStorage.getItem("safari2aria");
   try {
-    config = JSON.parse(config || "{}");
+    config = config ? JSON.parse(config):defConfig;
   } catch (err) {
     config = {
       defaultRpcIndex: 0
     };
   }
   fileTypes = config.filetypes ? config.filetypes.split(" ") : [];
-  for (let a = 0; a < fileTypes.length; a++)fileTypes[a] = fileTypes[a].toLowerCase()
+  for (let a = 0; a < fileTypes.length; a++) fileTypes[a] = fileTypes[a].toLowerCase()
   rpcList = config.rpcList;
   //更新配置后需要同步至页面脚本
   sendMsg('updateConfig', {
     ...config,
-    sendAll:true
+    sendAll: true
   });
   initAria2();
   if (_.get(safari, 'extension.popovers[0].contentWindow.tlwin.refreshServerList')) {
     safari.extension.popovers[0].contentWindow.tlwin.refreshServerList();
   }
 }
+
 //向页面注入脚本发送通知消息
 //msg={
 //  sendAll:false, 发送至所有页面
 //  hasCb:true, 有回调
 // }
-function sendMsg (type, msg, cb) {
+function sendMsg(type, msg, cb) {
   if (msg instanceof Function) {
     cb = msg;
     msg = {};
@@ -351,8 +363,9 @@ function sendMsg (type, msg, cb) {
     }
   }
 }
+
 //快捷键处理
-function keyPressAction (keys) {
+function keyPressAction(keys) {
   keyPressed = keys.keyPressed || {};
   if (keyPressed.isShiftPressd && keyPressed.isOptionPressd) {
     //alt+shift +[1-9]切换aria服务
@@ -383,7 +396,8 @@ function keyPressAction (keys) {
   }
 
 }
-function handleCommand (e) {
+
+function handleCommand(e) {
   let command = e.command.split('.');
   let commandAction = {
     "showOptions": function () {
@@ -416,15 +430,17 @@ function handleCommand (e) {
     commandAction[command[0]]()
   }
 }
-function validateCommand (e) {
+
+function validateCommand(e) {
   let match = e.command && e.command.match(/^DownloadWith/);
   if (match && match.length >= 0) {
     let a = e.userInfo;
     (a && a.length && a[0]) || (e.target.disabled = !0)
   }
 }
+
 //拦截导航跳转事件
-function handleNavigation (e) {
+function handleNavigation(e) {
   if (downloadAble(e.url, config, keyPressed)) {
     e.preventDefault();
     sendMsg('getCookie', function (msg) {
@@ -438,8 +454,9 @@ function handleNavigation (e) {
     });
   }
 }
+
 //根据配置生成右键菜单
-function handleContextMenu (event) {
+function handleContextMenu(event) {
   rpcList.forEach(function (rpc, index) {
     event.contextMenu.appendContextMenuItem(["DownloadWithAria2", index].join("."), [getText('Downloaded to'), rpc.name].join(''));
   });
@@ -450,12 +467,14 @@ function handleContextMenu (event) {
     event.contextMenu.appendContextMenuItem('DownloadWithBaidulixian', [getText('Import to baidu lixian')].join(''));
   }
 }
+
 //拦截注入脚本发来的消息
-function messageHandler (e) {
+function messageHandler(e) {
   if (messageAction[e.name]) {
     messageAction[e.name](e.message, e);
   }
 }
+
 //页面加载成功后初始化配置
 document.addEventListener("DOMContentLoaded", restoreOptions);
 safari.application.addEventListener("message", messageHandler, !1);
