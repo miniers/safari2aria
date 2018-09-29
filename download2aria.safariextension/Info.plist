@@ -7,15 +7,15 @@
 	<key>Builder Version</key>
 	<string>14606.1.36.1.9</string>
 	<key>CFBundleDisplayName</key>
-	<string>safari2aria</string>
+	<string>download2aria</string>
 	<key>CFBundleIdentifier</key>
-	<string>miniers.safari2aria</string>
+	<string>miniers.download2aria</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.9.7</string>
+	<string>1.0.0</string>
 	<key>CFBundleVersion</key>
-	<string>2.9.7</string>
+	<string>1.0.0</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
@@ -45,7 +45,7 @@
 				<key>Include By Default</key>
 				<true/>
 				<key>Label</key>
-				<string>safari2aria</string>
+				<string>download2aria</string>
 				<key>Popover</key>
 				<string>taskList</string>
 				<key>Tool Tip</key>
@@ -71,7 +71,7 @@
 	<key>Description</key>
 	<string>Catches downloads for aria2</string>
 	<key>DeveloperIdentifier</key>
-	<string>V34B9RF2D5</string>
+	<string>KPLNJ4K478</string>
 	<key>ExtensionInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>Permissions</key>
@@ -86,8 +86,6 @@
 	</dict>
 	<key>Update From Gallery</key>
 	<true/>
-	<key>Update Manifest URL</key>
-	<string>https://miniers.github.io/safari2aria/update.plist?t=2.9.7</string>
 	<key>Website</key>
 	<string>https://github.com/miniers/safari2aria</string>
 </dict>

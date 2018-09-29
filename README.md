@@ -1,4 +1,4 @@
-# safari2aria
+# download2aria
 
 [点击下载](https://github.com/miniers/safari2aria/releases)
 

@@ -2,7 +2,7 @@
 const path = require('path')
 const fs = require('fs');
 let pages = [], js = [];
-let outputDir="../safari2aria.safariextension";
+let outputDir="../download2aria.safariextension";
 fs.readdirSync(path.resolve(__dirname, '../src/pages')).forEach(file => {
   pages.push({
     name: file,
