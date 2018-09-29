@@ -26,6 +26,8 @@
       <change beforePath="$PROJECT_DIR$/safari2aria.safariextension/static/js/popover.802cbcb10e7aa33121e3.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/safari2aria.safariextension/static/js/startscript.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/safari2aria.safariextension/static/js/vendor.615326b0ac9cc06cc752.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/safari2aria.safariextz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/config.json" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -96,20 +98,20 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/config/config.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="26" column="20" lean-forward="true" selection-end-line="34" />
+            <state relative-caret-position="510">
+              <caret line="34" lean-forward="true" selection-start-line="34" selection-end-line="34" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="2" column="15" selection-start-line="2" selection-start-column="15" selection-end-line="2" selection-end-column="15" />
+            <state relative-caret-position="615">
+              <caret line="41" column="43" lean-forward="true" selection-start-line="41" selection-start-column="43" selection-end-line="41" selection-end-column="43" />
             </state>
           </provider>
         </entry>
@@ -199,12 +201,12 @@
         <option value="$PROJECT_DIR$/safari2aria.safariextension/static/js/global.be384608919a9506706a.js" />
         <option value="$PROJECT_DIR$/safari2aria.safariextension/static/js/popover.802cbcb10e7aa33121e3.js" />
         <option value="$PROJECT_DIR$/safari2aria.safariextension/static/js/options.3145a8bcb3af865f6bf9.js" />
-        <option value="$PROJECT_DIR$/src/config/config.json" />
         <option value="$PROJECT_DIR$/config/index.js" />
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/download2aria.safariextension/Info.plist" />
         <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/src/config/config.json" />
       </list>
     </option>
   </component>
@@ -402,12 +404,12 @@
       <workItem from="1538041555624" duration="1490000" />
       <workItem from="1538095095365" duration="14000" />
       <workItem from="1538124750609" duration="3541000" />
-      <workItem from="1538183119096" duration="690000" />
+      <workItem from="1538183119096" duration="835000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="6772000" />
+    <option name="totallyTimeSpent" value="6917000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1080" y="-483" width="1080" height="1897" extended-state="0" />
@@ -561,17 +563,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/config/config.json">
+    <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="26" column="20" lean-forward="true" selection-end-line="34" />
+        <state relative-caret-position="615">
+          <caret line="41" column="43" lean-forward="true" selection-start-line="41" selection-start-column="43" selection-end-line="41" selection-end-column="43" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
+    <entry file="file://$PROJECT_DIR$/src/config/config.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="15" selection-start-line="2" selection-start-column="15" selection-end-line="2" selection-end-column="15" />
+        <state relative-caret-position="510">
+          <caret line="34" lean-forward="true" selection-start-line="34" selection-end-line="34" />
         </state>
       </provider>
     </entry>
